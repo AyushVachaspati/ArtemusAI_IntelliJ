@@ -1,0 +1,41 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>com.artemus.ArtemusAI</id>
+
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+  <name>ArtemusAI</name>
+
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="support@artemusai.com" url="https://www.artemusai.com">Artemus AI</vendor>
+
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description><![CDATA[
+    Artemus is your AI assistant. Get Inline Code Suggestions and talk to Artemus in chat.<br>
+  ]]></description>
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+<!--    <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>-->
+  </extensions>
+
+  <actions>
+    <action class="com.artemus.TestAction"
+            id="TestInlineAction" text="Trigger Test Action">
+      <keyboard-shortcut first-keystroke="alt CLOSE_BRACKET" keymap="$default"/>
+    </action>
+    <action class="com.artemus.TestAction2"
+            id="TestInlineAction2" text="Trigger Test Action2">
+      <keyboard-shortcut first-keystroke="alt OPEN_BRACKET" keymap="$default"/>
+    </action>
+  </actions>
+
+</idea-plugin>
