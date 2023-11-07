@@ -29,17 +29,11 @@ class InlineElementRenderer(private val editor: Editor, private var line: String
         targetRegion: Rectangle,
         textAttributes: TextAttributes
     ) {
-        println("InlineElementRenderer Called")
         color = color ?: GraphicsUtils.color
         g.color = color
         g.font = GraphicsUtils.getFont(editor, deprecated)
 
-        val tabSize = getTabSize(editor)
-        var stringToRender = line;
-        if(tabSize!=null){
-            stringToRender = line.replace("\t", " ".repeat(tabSize))
-        }
 
-        g.drawString(stringToRender, targetRegion.x, targetRegion.y + editor.ascent)
+        g.drawString(line, targetRegion.x, targetRegion.y + editor.ascent)
     }
 }

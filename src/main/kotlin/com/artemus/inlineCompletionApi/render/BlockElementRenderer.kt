@@ -32,19 +32,13 @@ class BlockElementRenderer(
         targetRegion: Rectangle,
         textAttributes: TextAttributes
     ) {
-        println("BlockElementRenderer Called")
         color = color ?: GraphicsUtils.color
         g.color = color
         g.font = GraphicsUtils.getFont(editor, deprecated)
 
         blockText.withIndex().forEach { (i, line) ->
-            val tabSize = getTabSize(editor)
-            var stringToRender = line;
-            if(tabSize!=null){
-                stringToRender = line.replace("\t", " ".repeat(tabSize))
-            }
             g.drawString(
-                stringToRender,
+                line,
                 0,
                 targetRegion.y + i * editor.lineHeight + editor.ascent
             )

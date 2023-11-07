@@ -53,7 +53,9 @@ class CompletionPreview private constructor(
 
     override fun dispose() {
         editor.putUserData(INLINE_COMPLETION_PREVIEW, null)
-    } //  public void applyPreview(@Nullable Caret caret) {
+    }
+
+    //  public void applyPreview(@Nullable Caret caret) {
 
     //    if (caret == null) {
     //      return;
