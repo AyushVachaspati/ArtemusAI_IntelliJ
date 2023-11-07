@@ -5,16 +5,12 @@ import com.artemus.inlineCompletionApi.general.Utils
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
-import com.intellij.openapi.command.undo.UndoableAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.editor.Inlay
+import com.intellij.openapi.editor.VisualPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.progress.ModalTaskOwner.project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
-import com.intellij.testFramework.utils.editor.getVirtualFile
-import com.jetbrains.rd.generator.nova.PredefinedType.string
 import java.awt.Rectangle
 import java.util.stream.Collectors
 
@@ -30,6 +26,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         Disposer.register(parent, this)
     }
 
+    // TODO: Should we remove offset
     override val offset: Int?
         get() = beforeSuffixInlay?.offset ?: afterSuffixInlay?.offset ?: blockInlay?.offset
 
@@ -63,6 +60,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         bringToEnd?.let {
             // TODO: Does Undo work in all cases. We need good testing for this.
             //  test case when user cancel preview by doing undo
+            //  test case when user closes the project/ file while preview is showing
             val project = editor?.project
             if(project!=null)  {
                 UndoManager.getInstance(project).undo(
@@ -102,7 +100,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             FirstLineRendering.NoSuffix -> {
                 renderNoSuffix(editor, firstLine, completion, start_offset)
             }
-            FirstLineRendering.SuffixOnly -> {
+            FirstLineRendering.AfterSuffix -> {
                 renderAfterSuffix(endIndex, completion, old_suffix, firstLine, editor, start_offset)
             }
             FirstLineRendering.BeforeAndAfterSuffix -> {
@@ -114,7 +112,12 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
         if (instructions.shouldRenderBlock) {
             val otherLines = lines.stream().skip(1).collect(Collectors.toList())
-            renderBlock(otherLines, editor, completion, start_offset)
+            if(endIndex==-1){
+                renderBlock(otherLines, editor, completion,old_suffix, start_offset)
+            }
+            else{
+                renderBlock(otherLines, editor, completion,null, start_offset)
+            }
         }
 
 
@@ -123,12 +126,14 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 //        }
 
         // remove the extra text from editor and set editor so that it can be disposed by reinserting the correct text.
-        if(endIndex==-1)
+        if(endIndex==-1 && instructions.shouldRenderBlock)
         {
             // TODO: Need to test what happens when user does undo and the preview is shown. This could cause issues.
             this.bringToEnd = old_suffix
             val r = Runnable { editor.document.deleteString(start_offset, start_offset + bringToEnd!!.length) }
+            val currentPosition = editor.caretModel.logicalPosition
             WriteCommandAction.runWriteCommandAction(editor.project, r)
+            editor.caretModel.moveToLogicalPosition(currentPosition)
             this.editor = editor
         }
 
@@ -138,9 +143,10 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         lines: List<String>,
         editor: Editor,
         completion: String,
+        suffix:String?,
         offset: Int
     ) {
-        val blockElementRenderer = BlockElementRenderer(editor, lines, false)
+        val blockElementRenderer = BlockElementRenderer(editor, lines, suffix, false)
         val element = editor
             .inlayModel
             .addBlockElement(

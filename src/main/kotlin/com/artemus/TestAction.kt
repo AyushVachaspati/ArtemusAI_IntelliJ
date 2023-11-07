@@ -11,7 +11,8 @@ class TestAction: AnAction() {
         val editor = e.getData(PlatformDataKeys.EDITOR);
         if(editor!=null){
             CompletionPreview.createInstance(editor,
-                listOf("\t\twell This is a Test\n\tThis is a Test\n  This is a Test\n    This is a Test\n        This is a Test\n"),
+                listOf("\t\tThis is a Test\n\tThis is a Test\n  This is a Test\n    This is a Test\n        This is a Test\n"),
+//                listOf("\t\twell This is a Test"),
                 300);
         }
     }

@@ -12,7 +12,7 @@ import java.awt.Rectangle
 
 class InlineElementRenderer(private val editor: Editor, private var line: String, private val deprecated: Boolean) :
     EditorCustomElementRenderer {
-    private var color: Color? = null
+//    private var color: Color? = null
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         return editor.contentComponent
             .getFontMetrics(GraphicsUtils.getFont(editor, deprecated)).stringWidth(line)
@@ -29,8 +29,8 @@ class InlineElementRenderer(private val editor: Editor, private var line: String
         targetRegion: Rectangle,
         textAttributes: TextAttributes
     ) {
-        color = color ?: GraphicsUtils.color
-        g.color = color
+//        color = color ?: GraphicsUtils.color
+        g.color = GraphicsUtils.color
         g.font = GraphicsUtils.getFont(editor, deprecated)
 
 

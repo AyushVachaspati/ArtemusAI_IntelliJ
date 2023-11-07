@@ -4,6 +4,8 @@ package com.artemus.inlineCompletionApi.render
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.colors.ColorKey
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
@@ -27,6 +29,13 @@ object GraphicsUtils {
         attributes[TextAttribute.STRIKETHROUGH] = TextAttribute.STRIKETHROUGH_ON
         return Font(attributes)
     }
+
+    val defaultColor: Color
+        get() {
+            val currentScheme = EditorColorsManager.getInstance().globalScheme
+            val defaultTextColor = currentScheme.defaultForeground
+            return defaultTextColor
+        }
 
     val color: Color
         get() {

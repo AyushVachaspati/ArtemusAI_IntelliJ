@@ -4,7 +4,7 @@ package com.artemus.inlineCompletionApi.render
 enum class FirstLineRendering {
     None,
     NoSuffix,
-    SuffixOnly,
+    AfterSuffix,
     BeforeAndAfterSuffix,
 }
 
@@ -19,7 +19,7 @@ fun determineRendering(textLines: List<String>, oldSuffix: String): RenderingIns
         if (oldSuffix.trim().isNotEmpty()) {
             val endIndex = textLines[0].indexOf(oldSuffix)
 
-            if (endIndex == 0) return RenderingInstructions(FirstLineRendering.SuffixOnly, shouldRenderBlock)
+            if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSuffix, shouldRenderBlock)
             else if (endIndex > 0) return RenderingInstructions(
                 FirstLineRendering.BeforeAndAfterSuffix,
                 shouldRenderBlock

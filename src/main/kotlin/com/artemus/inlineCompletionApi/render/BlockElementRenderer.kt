@@ -12,9 +12,10 @@ import java.awt.Rectangle
 class BlockElementRenderer(
     private val editor: Editor,
     private val blockText: List<String>,
+    private val suffix: String?,
     private val deprecated: Boolean
 ) : EditorCustomElementRenderer {
-    private var color: Color? = null
+//    private var color: Color? = null
 
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         val firstLine = blockText[0]
@@ -32,16 +33,41 @@ class BlockElementRenderer(
         targetRegion: Rectangle,
         textAttributes: TextAttributes
     ) {
-        color = color ?: GraphicsUtils.color
-        g.color = color
-        g.font = GraphicsUtils.getFont(editor, deprecated)
-
         blockText.withIndex().forEach { (i, line) ->
-            g.drawString(
-                line,
-                0,
-                targetRegion.y + i * editor.lineHeight + editor.ascent
-            )
+            if(suffix!=null && i == blockText.size-1) {
+                //            color = color?: GraphicsUtils.color
+                g.color = GraphicsUtils.color
+                g.font = GraphicsUtils.getFont(editor, deprecated)
+
+                g.drawString(
+                    line,
+                    0,
+                    targetRegion.y + i * editor.lineHeight + editor.ascent
+                )
+
+                //            color = color?: GraphicsUtils.color
+                g.color = GraphicsUtils.defaultColor
+                g.font = GraphicsUtils.getFont(editor, deprecated)
+                print(line.length)
+                val x = editor.contentComponent
+                    .getFontMetrics(GraphicsUtils.getFont(editor, deprecated)).stringWidth(line)
+                g.drawString(
+                    suffix,
+                    x,
+                    targetRegion.y + i * editor.lineHeight + editor.ascent
+                )
+            }
+            else{
+                //            color = color?: GraphicsUtils.color
+                g.color = GraphicsUtils.color
+                g.font = GraphicsUtils.getFont(editor, deprecated)
+
+                g.drawString(
+                    line,
+                    0,
+                    targetRegion.y + i * editor.lineHeight + editor.ascent
+                )
+            }
         }
     }
 
