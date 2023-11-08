@@ -28,6 +28,17 @@
   </extensions>
 
   <actions>
+
+    <action class="com.artemus.inlineCompletionApi.ShowNextInlineCompletion"
+            id="ShowNextTabnineInlineCompletionAction" text="Show Next Inline Completion">
+      <keyboard-shortcut first-keystroke="alt CLOSE_BRACKET" keymap="$default"/>
+    </action>
+
+    <action class="com.artemus.inlineCompletionApi.ShowPreviousInlineCompletion"
+            id="ShowPreviousTabnineInlineCompletionAction" text="Show Previous Inline Completion">
+      <keyboard-shortcut first-keystroke="alt OPEN_BRACKET" keymap="$default"/>
+    </action>
+
     <action class="com.artemus.inlineCompletionApi.AcceptInlineCompletion"
             id="AcceptInlineCompletion" text="Accept Inline Completion">
       <keyboard-shortcut first-keystroke="TAB" keymap="$default" />
@@ -35,12 +46,12 @@
 
     <action class="com.artemus.TestAction"
             id="TestInlineAction" text="Trigger Test Action">
-      <keyboard-shortcut first-keystroke="alt CLOSE_BRACKET" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="alt 0" keymap="$default"/>
     </action>
 
     <action class="com.artemus.TestAction2"
             id="TestInlineAction2" text="Trigger Test Action2">
-      <keyboard-shortcut first-keystroke="alt OPEN_BRACKET" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="alt 9" keymap="$default"/>
     </action>
   </actions>
 

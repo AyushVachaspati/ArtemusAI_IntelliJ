@@ -16,8 +16,8 @@ import com.jetbrains.rd.util.printlnError
 class CompletionPreview private constructor(
     val editor: Editor, private val completions: List<String>, private val offset: Int
 ) : Disposable {
-    private val artemusInlay: ArtemusInlay
-    private val currentIndex = 0
+    private var artemusInlay: ArtemusInlay
+    private var currentIndex = 0
 
     init {
         EditorUtil.disposeWithEditor(editor, this)
@@ -27,16 +27,17 @@ class CompletionPreview private constructor(
     val currentCompletion: String
         get() = completions[currentIndex]
 
-    //  public void togglePreview(CompletionOrder order) {
-    //    int nextIndex = currentIndex + order.diff();
-    //    currentIndex = (completions.size() + nextIndex) % completions.size();
-    //
-    //    Disposer.dispose(tabnineInlay);
-    //    tabnineInlay = TabnineInlay.create(this);
-    //
-    //    createPreview();
-    //    completionsEventSender.sendToggleInlineSuggestionEvent(order, currentIndex);
-    //  }
+    fun togglePreview(diff: Int) {
+        val nextIndex = currentIndex + diff
+        currentIndex = (completions.size + nextIndex) % completions.size
+
+        Disposer.dispose(artemusInlay)
+        artemusInlay = ArtemusInlay.create(this);
+
+        createPreview();
+    }
+
+
     private fun createPreview(): String? {
         val completion = completions[currentIndex]
 
