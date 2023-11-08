@@ -9,7 +9,7 @@ interface ArtemusInlay : Disposable {
     val isEmpty: Boolean
 
     fun getBounds(): Rectangle?
-    fun render(editor: Editor, completion: String, offset: Int)
+    fun render(editor: Editor, completion: String, startOffset: Int)
 
     companion object {
         @JvmStatic
