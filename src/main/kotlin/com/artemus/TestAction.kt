@@ -8,12 +8,13 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 class TestAction: AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         println("Test Action Performed")
-        val editor = e.getData(PlatformDataKeys.EDITOR);
+        val editor = e.getData(PlatformDataKeys.EDITOR)
         if(editor!=null){
             CompletionPreview.createInstance(editor,
-                listOf("\t\tThis is a Test\n\tThis is a Test\n  This is a Test\n    This is a Test\n        This is a Test\n"),
+                listOf("\t\tThis is a Test1\n\tThis is a Test2\n  This is a Test3\n    This is a Test4\n        This is a Test5\n"),
+//                listOf("\t\twell This is a Test\n\tThis is a Test2"),
 //                listOf("\t\twell This is a Test"),
-                300);
+                300)
         }
     }
 }

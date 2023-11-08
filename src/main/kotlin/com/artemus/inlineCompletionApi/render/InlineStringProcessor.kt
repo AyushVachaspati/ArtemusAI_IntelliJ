@@ -3,9 +3,9 @@ package com.artemus.inlineCompletionApi.render
 
 enum class FirstLineRendering {
     None,
-    NoSuffix,
-    AfterSuffix,
-    BeforeAndAfterSuffix,
+    NoSubstring,
+    AfterSubstring,
+    BeforeAndAfterSubstring,
 }
 
 data class RenderingInstructions(val firstLine: FirstLineRendering, val shouldRenderBlock: Boolean)
@@ -19,14 +19,14 @@ fun determineRendering(textLines: List<String>, oldSuffix: String): RenderingIns
         if (oldSuffix.trim().isNotEmpty()) {
             val endIndex = textLines[0].indexOf(oldSuffix)
 
-            if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSuffix, shouldRenderBlock)
+            if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSubstring, shouldRenderBlock)
             else if (endIndex > 0) return RenderingInstructions(
-                FirstLineRendering.BeforeAndAfterSuffix,
+                FirstLineRendering.BeforeAndAfterSubstring,
                 shouldRenderBlock
             )
         }
 
-        return RenderingInstructions(FirstLineRendering.NoSuffix, shouldRenderBlock)
+        return RenderingInstructions(FirstLineRendering.NoSubstring, shouldRenderBlock)
     }
 
     return RenderingInstructions(FirstLineRendering.None, shouldRenderBlock)

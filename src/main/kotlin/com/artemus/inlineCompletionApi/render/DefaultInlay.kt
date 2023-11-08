@@ -7,12 +7,10 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.Inlay
-import com.intellij.openapi.editor.VisualPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import java.awt.Rectangle
-import java.util.stream.Collectors
 
 
 class DefaultInlay(parent: Disposable) : ArtemusInlay {
@@ -20,8 +18,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
     private var afterSuffixInlay: Inlay<*>? = null
     private var blockInlay: Inlay<*>? = null
     private var insertionHint: CompletionPreviewInsertionHint? = null
-    private var bringToEnd: String? = null
-    private var editor: Editor? = null;
+    private var editor: Editor? = null
     init {
         Disposer.register(parent, this)
     }
@@ -57,8 +54,8 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             Disposer.dispose(it)
             blockInlay = null
         }
-        bringToEnd?.let {
-            // TODO: Does Undo work in all cases. We need good testing for this.
+        editor?.let {
+            // TODO: Removes the \n we add for block rendering. We need good testing for this.
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
             val project = editor?.project
@@ -73,7 +70,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
-    override fun render(editor: Editor, completion: String, start_offset: Int) {
+    override fun render(editor: Editor, completion: String, startOffset: Int) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion)   // completion.insertText is the API I want
         if (lines.isEmpty()){
@@ -83,41 +80,62 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val tabSize = getTabSize(editor)
         lines = lines.map { it.replace("\t"," ".repeat(if (tabSize != null) tabSize else 4 ))}
         val firstLine = lines[0]
+        val lastLine = lines[lines.size-1]
 
-        val start_offset = editor.caretModel.offset
+        val startOffset = editor.caretModel.offset
         var end_offset = editor.caretModel.visualLineEnd
-        end_offset = if (end_offset==start_offset) end_offset else end_offset-1;
+        end_offset = if (end_offset==startOffset) end_offset else end_offset-1
 
         // old suffix is just until eol for us
-        val old_suffix = editor.document.getText(TextRange(start_offset, end_offset))
+        val old_suffix = editor.document.getText(TextRange(startOffset, end_offset))
 
         val endIndex = firstLine.indexOf(old_suffix)
 
-        // TODO: BringToEnd text needs to go to the end of the render based on what the completion is. If last completion has next line
         val instructions = determineRendering(lines, old_suffix)
 
         when (instructions.firstLine) {
-            FirstLineRendering.NoSuffix -> {
-                renderNoSuffix(editor, firstLine, completion, start_offset)
+            FirstLineRendering.NoSubstring -> {
+                if(instructions.shouldRenderBlock){
+                    val currentPosition = editor.caretModel.logicalPosition
+                    val r = Runnable {
+                        editor.document.insertString(startOffset, "\n")
+                        this.editor = editor
+                        editor.caretModel.moveToLogicalPosition(currentPosition)
+                    }
+                    WriteCommandAction.runWriteCommandAction(editor.project, r)
+
+                    val currOffset = editor.caretModel.offset
+                    val newLine = editor.document.getLineNumber(currOffset) + 1
+                    val newOffset = editor.document.getLineStartOffset(newLine)
+
+                    renderNoSubstring(editor, firstLine, currOffset)
+                    if(lines.size>2) {
+                        val otherLines = lines.subList(1, lines.size - 1)
+                        renderBlock(otherLines, editor, newOffset, true)
+                    }
+                    renderNoSubstring(editor, lastLine, newOffset)
+
+                }
+                else{
+                    renderNoSubstring(editor, firstLine, startOffset)
+                }
             }
-            FirstLineRendering.AfterSuffix -> {
-                renderAfterSuffix(endIndex, completion, old_suffix, firstLine, editor, start_offset)
+            FirstLineRendering.AfterSubstring -> {
+                renderAfterSubstring(endIndex, old_suffix, firstLine, editor, startOffset)
+                if(instructions.shouldRenderBlock) {
+                    val otherLines = lines.subList(1, lines.size)
+                    renderBlock(otherLines, editor, startOffset, false)
+                }
             }
-            FirstLineRendering.BeforeAndAfterSuffix -> {
-                renderBeforeSuffix(firstLine, endIndex, editor, completion, start_offset)
-                renderAfterSuffix(endIndex, completion,old_suffix, firstLine, editor, start_offset)
+            FirstLineRendering.BeforeAndAfterSubstring -> {
+                renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                if(instructions.shouldRenderBlock) {
+                    val otherLines = lines.subList(1, lines.size)
+                    renderBlock(otherLines, editor, startOffset, false)
+                }
+                renderAfterSubstring(endIndex, old_suffix, firstLine, editor, startOffset)
             }
             FirstLineRendering.None -> {}
-        }
-
-        if (instructions.shouldRenderBlock) {
-            val otherLines = lines.stream().skip(1).collect(Collectors.toList())
-            if(endIndex==-1){
-                renderBlock(otherLines, editor, completion,old_suffix, start_offset)
-            }
-            else{
-                renderBlock(otherLines, editor, completion,null, start_offset)
-            }
         }
 
 
@@ -125,34 +143,21 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 //            insertionHint = CompletionPreviewInsertionHint(editor, this, "")
 //        }
 
-        // remove the extra text from editor and set editor so that it can be disposed by reinserting the correct text.
-        if(endIndex==-1 && instructions.shouldRenderBlock)
-        {
-            // TODO: Need to test what happens when user does undo and the preview is shown. This could cause issues.
-            this.bringToEnd = old_suffix
-            val r = Runnable { editor.document.deleteString(start_offset, start_offset + bringToEnd!!.length) }
-            val currentPosition = editor.caretModel.logicalPosition
-            WriteCommandAction.runWriteCommandAction(editor.project, r)
-            editor.caretModel.moveToLogicalPosition(currentPosition)
-            this.editor = editor
-        }
-
     }
 
     private fun renderBlock(
         lines: List<String>,
         editor: Editor,
-        completion: String,
-        suffix:String?,
-        offset: Int
+        offset: Int,
+        showAbove: Boolean = true
     ) {
-        val blockElementRenderer = BlockElementRenderer(editor, lines, suffix, false)
+        val blockElementRenderer = BlockElementRenderer(editor, lines, false)
         val element = editor
             .inlayModel
             .addBlockElement(
                 offset,
                 true,
-                false,
+                showAbove,
                 1,
                 blockElementRenderer
             )
@@ -165,7 +170,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
     private fun renderInline(
         editor: Editor,
         before: String,
-        completion: String,
         offset: Int
     ): Inlay<InlineElementRenderer>? {
         val element = editor
@@ -177,29 +181,26 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         return element
     }
 
-    private fun renderNoSuffix(
+    private fun renderNoSubstring(
         editor: Editor,
         firstLine: String,
-        completion: String,
         offset: Int
     ) {
-        beforeSuffixInlay = renderInline(editor, firstLine, completion, offset)
+        beforeSuffixInlay = renderInline(editor, firstLine, offset)
     }
 
-    private fun renderBeforeSuffix(
+    private fun renderBeforeSubstring(
         firstLine: String,
         endIndex: Int,
         editor: Editor,
-        completion: String,
         offset: Int
     ) {
         val beforeSuffix = firstLine.substring(0, endIndex)
-        beforeSuffixInlay = renderInline(editor, beforeSuffix, completion, offset)
+        beforeSuffixInlay = renderInline(editor, beforeSuffix, offset)
     }
 
-    private fun renderAfterSuffix(
+    private fun renderAfterSubstring(
         endIndex: Int,
-        completion: String,
         oldSuffix: String,
         firstLine: String,
         editor: Editor,
@@ -210,7 +211,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             afterSuffixInlay = renderInline(
                 editor,
                 firstLine.substring(afterSuffixIndex),
-                completion,
                 offset + oldSuffix.length
             )
         }
