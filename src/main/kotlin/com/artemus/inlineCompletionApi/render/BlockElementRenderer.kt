@@ -16,8 +16,9 @@ class BlockElementRenderer(
 
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         val firstLine = blockText[0]
-        return editor.contentComponent
+        val width = editor.contentComponent
             .getFontMetrics(GraphicsUtils.getFont(editor, deprecated)).stringWidth(firstLine)
+        return if(width>0) width else 1
     }
 
     override fun calcHeightInPixels(inlay: Inlay<*>): Int {

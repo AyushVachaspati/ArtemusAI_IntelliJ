@@ -3,12 +3,15 @@ package com.artemus.inlineCompletionApi
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
 import com.artemus.inlineCompletionApi.render.ArtemusInlay.Companion.create
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.TextRange
 import com.intellij.refactoring.rename.inplace.InplaceRefactoring
+import com.jetbrains.rd.util.printlnError
 
 class CompletionPreview private constructor(
     val editor: Editor, private val completions: List<String>, private val offset: Int
@@ -55,57 +58,45 @@ class CompletionPreview private constructor(
         editor.putUserData(INLINE_COMPLETION_PREVIEW, null)
     }
 
-    //  public void applyPreview(@Nullable Caret caret) {
+    fun applyPreview(editor: Editor?) {
+        if(editor==null) return
+        try {
+            applyPreviewInternal(editor)
+        } catch (e: Error) {
+            printlnError("Failed in the processes of accepting completion$e")
+        } finally {
+            Disposer.dispose(this)
+        }
+    }
 
-    //    if (caret == null) {
-    //      return;
-    //    }
-    //
-    //    Project project = editor.getProject();
-    //
-    //    if (project == null) {
-    //      return;
-    //    }
-    //
-    //    PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
-    //
-    //    if (file == null) {
-    //      return;
-    //    }
-    //
-    //    try {
-    //      applyPreviewInternal(caret.getOffset(), project, file);
-    //    } catch (Throwable e) {
-    //      Logger.getInstance(getClass()).warn("Failed in the processes of accepting completion", e);
-    //    } finally {
-    //      Disposer.dispose(this);
-    //    }
-    //  }
-    //  private void applyPreviewInternal(@NotNull Integer cursorOffset, Project project, PsiFile file) {
-    //    CompletionPreview.clear(editor);
-    //    String completion = completions.get(currentIndex);
-    //    String suffix = completion;
-    //    int startOffset = cursorOffset;
-    //    int endOffset = cursorOffset + suffix.length();
-    //    if (shouldRemoveSuffix(completion)) {
-    //      editor.getDocument().deleteString(cursorOffset, cursorOffset + completion.oldSuffix.length());
-    //    }
-    //    editor.getDocument().insertString(cursorOffset, suffix);
-    //    editor.getCaretModel().moveToOffset(startOffset + completion.length());
-    //    if (AppSettingsState.getInstance().getAutoImportEnabled()) {
-    //      Logger.getInstance(getClass()).info("Registering auto importer");
-    //      AutoImporter.registerTabNineAutoImporter(editor, project, startOffset, endOffset);
-    //    }
-    //    previewListener.executeSelection(
-    //        this.editor,
-    //        completion,
-    //        file.getName(),
-    //        RenderingMode.INLINE,
-    //        (selection -> {
-    //          selection.index = currentIndex;
-    //          SelectionUtil.addSuggestionsCount(selection, completions);
-    //        }));
-    //  }
+        private fun applyPreviewInternal(editor: Editor) {
+
+            clear(editor) // Remove the Inlay Currently shown
+
+            val completion = completions[currentIndex]
+            val startOffset = editor.caretModel.offset
+            var endOffset = editor.caretModel.visualLineEnd
+            endOffset = if (endOffset==startOffset) endOffset else endOffset-1
+
+            val oldSuffix = editor.document.getText(TextRange(startOffset, endOffset)) // old suffix is just until eol for us
+            val endIndex = completion.indexOf(oldSuffix)
+            if(endIndex==-1){
+                // just insert as is
+                val r = Runnable {
+                    editor.document.insertString(startOffset, completion)
+                }
+                WriteCommandAction.runWriteCommandAction(editor.project, r)
+            }
+            else{
+                //remove the suffix and then insert
+                val r = Runnable {
+                    editor.document.deleteString(startOffset, startOffset + oldSuffix.length)
+                    editor.document.insertString(startOffset, completion)
+                }
+                WriteCommandAction.runWriteCommandAction(editor.project, r)
+            }
+            editor.caretModel.moveToOffset(startOffset+completion.length)
+      }
     companion object {
         private val INLINE_COMPLETION_PREVIEW = Key.create<CompletionPreview>("INLINE_COMPLETION_PREVIEW")
         fun createInstance(
@@ -124,7 +115,8 @@ class CompletionPreview private constructor(
             return preview.currentCompletion
         }
 
-        fun getInstance(editor: Editor): CompletionPreview? {
+        fun getInstance(editor: Editor?): CompletionPreview? {
+            if(editor==null) return null
             return editor.getUserData(INLINE_COMPLETION_PREVIEW)
         }
 

@@ -73,9 +73,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
     override fun render(editor: Editor, completion: String, startOffset: Int) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion)   // completion.insertText is the API I want
-        if (lines.isEmpty()){
-            return
-        }
+        if (lines.isEmpty()) return
 
         val tabSize = getTabSize(editor)
         lines = lines.map { it.replace("\t"," ".repeat(if (tabSize != null) tabSize else 4 ))}
@@ -83,15 +81,14 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val lastLine = lines[lines.size-1]
 
         val startOffset = editor.caretModel.offset
-        var end_offset = editor.caretModel.visualLineEnd
-        end_offset = if (end_offset==startOffset) end_offset else end_offset-1
+        var endOffset = editor.caretModel.visualLineEnd
+        endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
-        // old suffix is just until eol for us
-        val old_suffix = editor.document.getText(TextRange(startOffset, end_offset))
+        val oldSuffix = editor.document.getText(TextRange(startOffset, endOffset)) // old suffix is just until eol for us
 
-        val endIndex = firstLine.indexOf(old_suffix)
+        val endIndex = firstLine.indexOf(oldSuffix)
 
-        val instructions = determineRendering(lines, old_suffix)
+        val instructions = determineRendering(lines, oldSuffix)
 
         when (instructions.firstLine) {
             FirstLineRendering.NoSubstring -> {
@@ -114,14 +111,13 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                         renderBlock(otherLines, editor, newOffset, true)
                     }
                     renderNoSubstring(editor, lastLine, newOffset)
-
                 }
                 else{
                     renderNoSubstring(editor, firstLine, startOffset)
                 }
             }
             FirstLineRendering.AfterSubstring -> {
-                renderAfterSubstring(endIndex, old_suffix, firstLine, editor, startOffset)
+                renderAfterSubstring(endIndex, oldSuffix, firstLine, editor, startOffset)
                 if(instructions.shouldRenderBlock) {
                     val otherLines = lines.subList(1, lines.size)
                     renderBlock(otherLines, editor, startOffset, false)
@@ -133,7 +129,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                     val otherLines = lines.subList(1, lines.size)
                     renderBlock(otherLines, editor, startOffset, false)
                 }
-                renderAfterSubstring(endIndex, old_suffix, firstLine, editor, startOffset)
+                renderAfterSubstring(endIndex, oldSuffix, firstLine, editor, startOffset)
             }
             FirstLineRendering.None -> {}
         }

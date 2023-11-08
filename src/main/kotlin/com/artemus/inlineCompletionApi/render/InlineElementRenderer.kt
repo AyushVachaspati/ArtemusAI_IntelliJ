@@ -6,21 +6,15 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup.TextAttributes
 import org.jetbrains.annotations.TestOnly
-import java.awt.Color
 import java.awt.Graphics
 import java.awt.Rectangle
 
 class InlineElementRenderer(private val editor: Editor, private var line: String, private val deprecated: Boolean) :
     EditorCustomElementRenderer {
-//    private var color: Color? = null
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
-        return editor.contentComponent
+        val width = editor.contentComponent
             .getFontMetrics(GraphicsUtils.getFont(editor, deprecated)).stringWidth(line)
-    }
-
-    @TestOnly
-    fun getContent(): String {
-        return line
+        return if(width>0) width else 1
     }
 
     override fun paint(

@@ -19,7 +19,6 @@ import java.util.stream.Collectors
 import kotlin.math.abs
 
 object Utils {
-    private const val UNKNOWN = "Unknown"
     fun endsWithADot(doc: Document, positionBeforeSuggestionPrefix: Int): Boolean {
         val begin = positionBeforeSuggestionPrefix - ".".length
         return if (begin < 0 || positionBeforeSuggestionPrefix > doc.textLength) {
@@ -48,7 +47,7 @@ object Utils {
     }
 
     fun asLines(block: String): List<String> {
-        return Arrays.stream(block.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        return Arrays.stream(block.split("\n".toRegex()).toTypedArray())
             .collect(Collectors.toList())
     }
 
