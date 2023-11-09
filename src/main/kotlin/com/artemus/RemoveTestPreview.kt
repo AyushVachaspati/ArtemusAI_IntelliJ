@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 
-class TestAction2: AnAction() {
+class RemoveTestPreview: AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         println("Test Action Performed")
         val editor = e.getData(PlatformDataKeys.EDITOR);

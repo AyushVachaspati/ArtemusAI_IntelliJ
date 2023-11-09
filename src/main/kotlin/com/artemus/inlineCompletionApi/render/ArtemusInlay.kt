@@ -11,4 +11,12 @@ interface ArtemusInlay : Disposable {
 
     fun getBounds(): Rectangle?
     fun render(editor: Editor, completion: String)
+
+    companion object {
+        @JvmStatic
+        fun create(parent: Disposable): ArtemusInlay {
+            // Define which Inlay should be used globally. Can also send different Inlay based on some conditions.
+            return DefaultInlay(parent)
+        }
+    }
 }

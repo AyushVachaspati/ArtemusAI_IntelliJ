@@ -21,7 +21,7 @@ class CompletionPreview private constructor(
 
     init {
         EditorUtil.disposeWithEditor(editor, this)
-        artemusInlayForCurrentPreview = DefaultInlay(this)
+        artemusInlayForCurrentPreview = ArtemusInlay.create(this)
     }
 
     val currentCompletion: String
@@ -32,7 +32,7 @@ class CompletionPreview private constructor(
         currentIndex = (completions.size + nextIndex) % completions.size
 
         Disposer.dispose(artemusInlayForCurrentPreview)
-        artemusInlayForCurrentPreview = DefaultInlay(this);
+        artemusInlayForCurrentPreview = ArtemusInlay.create(this)
 
         showPreview();
     }
