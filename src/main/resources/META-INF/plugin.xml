@@ -24,7 +24,10 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
-<!--    <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>-->
+    <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>
+    <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.EscapeHandler"
+                         id="previewEscape" order="before hide-hints"/>
+
   </extensions>
 
   <actions>
@@ -47,11 +50,6 @@
     <action class="com.artemus.ShowTestPreveiw"
             id="ShowTestPreveiw" text="Trigger Test Action">
       <keyboard-shortcut first-keystroke="alt 0" keymap="$default"/>
-    </action>
-
-    <action class="com.artemus.RemoveTestPreview"
-            id="RemoveTestPreview" text="Trigger Test Action2">
-      <keyboard-shortcut first-keystroke="alt 9" keymap="$default"/>
     </action>
   </actions>
 
