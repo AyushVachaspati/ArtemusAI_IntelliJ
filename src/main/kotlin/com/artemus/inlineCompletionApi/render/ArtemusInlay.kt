@@ -5,16 +5,10 @@ import com.intellij.openapi.editor.Editor
 import java.awt.Rectangle
 
 interface ArtemusInlay : Disposable {
+    // TODO: Check if we can remove isEmpty and Offset
     val offset: Int?
     val isEmpty: Boolean
 
     fun getBounds(): Rectangle?
-    fun render(editor: Editor, completion: String, startOffset: Int)
-
-    companion object {
-        @JvmStatic
-        fun create(parent: Disposable): ArtemusInlay {
-            return DefaultInlay(parent)
-        }
-    }
+    fun render(editor: Editor, completion: String)
 }

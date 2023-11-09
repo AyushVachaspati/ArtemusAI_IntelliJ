@@ -70,7 +70,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
-    override fun render(editor: Editor, completion: String, startOffset: Int) {
+    override fun render(editor: Editor, completion: String) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion)   // completion.insertText is the API I want
         if (lines.isEmpty()) return

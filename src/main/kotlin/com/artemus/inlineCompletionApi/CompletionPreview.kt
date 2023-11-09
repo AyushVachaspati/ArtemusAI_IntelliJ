@@ -1,7 +1,7 @@
 package com.artemus.inlineCompletionApi
 
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
-import com.artemus.inlineCompletionApi.render.ArtemusInlay.Companion.create
+import com.artemus.inlineCompletionApi.render.DefaultInlay
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
@@ -14,14 +14,14 @@ import com.intellij.refactoring.rename.inplace.InplaceRefactoring
 import com.jetbrains.rd.util.printlnError
 
 class CompletionPreview private constructor(
-    val editor: Editor, private val completions: List<String>, private val offset: Int
+    val editor: Editor, private val completions: List<String>
 ) : Disposable {
-    private var artemusInlay: ArtemusInlay
+    private var artemusInlayForCurrentPreview: ArtemusInlay
     private var currentIndex = 0
 
     init {
         EditorUtil.disposeWithEditor(editor, this)
-        artemusInlay = create(this)
+        artemusInlayForCurrentPreview = DefaultInlay(this)
     }
 
     val currentCompletion: String
@@ -31,14 +31,14 @@ class CompletionPreview private constructor(
         val nextIndex = currentIndex + diff
         currentIndex = (completions.size + nextIndex) % completions.size
 
-        Disposer.dispose(artemusInlay)
-        artemusInlay = ArtemusInlay.create(this);
+        Disposer.dispose(artemusInlayForCurrentPreview)
+        artemusInlayForCurrentPreview = DefaultInlay(this);
 
-        createPreview();
+        showPreview();
     }
 
 
-    private fun createPreview(): String? {
+    private fun showPreview(): String? {
         val completion = completions[currentIndex]
 
         // conditions to check when showing preview
@@ -48,16 +48,13 @@ class CompletionPreview private constructor(
             null
         } else try {
             editor.document.startGuardedBlockChecking()
-            artemusInlay.render(editor, completion, offset)
+            artemusInlayForCurrentPreview.render(editor, completion)
             completion
         } finally {
             editor.document.stopGuardedBlockChecking()
         }
     }
 
-    override fun dispose() {
-        editor.putUserData(INLINE_COMPLETION_PREVIEW, null)
-    }
 
     fun applyPreview(editor: Editor?) {
         if(editor==null) return
@@ -98,17 +95,22 @@ class CompletionPreview private constructor(
             }
             editor.caretModel.moveToOffset(startOffset+completion.length)
       }
+
+    override fun dispose() {
+        editor.putUserData(INLINE_COMPLETION_PREVIEW, null)
+    }
+
+
     companion object {
         private val INLINE_COMPLETION_PREVIEW = Key.create<CompletionPreview>("INLINE_COMPLETION_PREVIEW")
         fun createInstance(
-            editor: Editor, completions: List<String>, offset: Int
+            editor: Editor, completions: List<String>
         ): String? {
 
-            //Clear any currently showing Preview. Specially when called manually.
             clear(editor)
-            val preview = CompletionPreview(editor, completions, offset)
+            val preview = CompletionPreview(editor, completions)
             editor.putUserData(INLINE_COMPLETION_PREVIEW, preview)
-            return preview.createPreview()
+            return preview.showPreview()
         }
 
         fun getCurrentCompletion(editor: Editor): String? {

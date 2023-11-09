@@ -13,8 +13,7 @@ class TestAction: AnAction() {
             CompletionPreview.createInstance(editor,
                 listOf("\t\tThis is a Test1\n\tThis is a Test2\n  This is a Test3\n    This is a Test4\n        This is a Test5\n",
                 "\t\twell This is a Test\n\tThis is a Test2",
-                    "\t\twell This is a Test"),
-                300)
+                    "\t\twell This is a Test"))
         }
     }
 }
