@@ -1,7 +1,6 @@
 package com.artemus.inlineCompletionApi
 
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
-import com.artemus.inlineCompletionApi.render.DefaultInlay
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
@@ -14,7 +13,7 @@ import com.intellij.refactoring.rename.inplace.InplaceRefactoring
 import com.jetbrains.rd.util.printlnError
 
 class CompletionPreview private constructor(
-    val editor: Editor, private val completions: List<String>
+    val editor: Editor, private val completions: List<InlineCompletionItem>
 ) : Disposable {
     private var artemusInlayForCurrentPreview: ArtemusInlay
     private var currentIndex = 0
@@ -24,7 +23,7 @@ class CompletionPreview private constructor(
         artemusInlayForCurrentPreview = ArtemusInlay.create(this)
     }
 
-    val currentCompletion: String
+    val currentCompletion: InlineCompletionItem
         get() = completions[currentIndex]
 
     fun togglePreview(diff: Int) {
@@ -38,7 +37,7 @@ class CompletionPreview private constructor(
     }
 
 
-    private fun showPreview(): String? {
+    private fun showPreview(): InlineCompletionItem? {
         val completion = completions[currentIndex]
 
         // conditions to check when showing preview
@@ -49,7 +48,7 @@ class CompletionPreview private constructor(
         } else try {
             editor.document.startGuardedBlockChecking()
             artemusInlayForCurrentPreview.render(editor, completion)
-            completion
+            return completion
         } finally {
             editor.document.stopGuardedBlockChecking()
         }
@@ -76,24 +75,24 @@ class CompletionPreview private constructor(
             var endOffset = editor.caretModel.visualLineEnd
             endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
-            val oldSuffix = editor.document.getText(TextRange(startOffset, endOffset)) // old suffix is just until eol for us
-            val endIndex = completion.indexOf(oldSuffix)
+            val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is just until eol for us
+            val endIndex = completion.insertText.indexOf(replaceSuffix)
             if(endIndex==-1){
                 // just insert as is
                 val r = Runnable {
-                    editor.document.insertString(startOffset, completion)
+                    editor.document.insertString(startOffset, completion.insertText)
                 }
                 WriteCommandAction.runWriteCommandAction(editor.project, r)
             }
             else{
                 //remove the suffix and then insert
                 val r = Runnable {
-                    editor.document.deleteString(startOffset, startOffset + oldSuffix.length)
-                    editor.document.insertString(startOffset, completion)
+                    editor.document.deleteString(startOffset, startOffset + replaceSuffix.length)
+                    editor.document.insertString(startOffset, completion.insertText)
                 }
                 WriteCommandAction.runWriteCommandAction(editor.project, r)
             }
-            editor.caretModel.moveToOffset(startOffset+completion.length)
+            editor.caretModel.moveToOffset(startOffset+completion.insertText.length)
       }
 
     override fun dispose() {
@@ -104,8 +103,8 @@ class CompletionPreview private constructor(
     companion object {
         private val INLINE_COMPLETION_PREVIEW = Key.create<CompletionPreview>("INLINE_COMPLETION_PREVIEW")
         fun createInstance(
-            editor: Editor, completions: List<String>
-        ): String? {
+            editor: Editor, completions: List<InlineCompletionItem>
+        ): InlineCompletionItem? {
 
             clear(editor)
             val preview = CompletionPreview(editor, completions)
@@ -113,7 +112,7 @@ class CompletionPreview private constructor(
             return preview.showPreview()
         }
 
-        fun getCurrentCompletion(editor: Editor): String? {
+        fun getCurrentCompletion(editor: Editor): InlineCompletionItem? {
             val preview = getInstance(editor) ?: return null
             return preview.currentCompletion
         }

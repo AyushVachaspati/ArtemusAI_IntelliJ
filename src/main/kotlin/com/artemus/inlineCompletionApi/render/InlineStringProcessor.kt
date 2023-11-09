@@ -3,21 +3,21 @@ package com.artemus.inlineCompletionApi.render
 
 enum class FirstLineRendering {
     None,
-    NoSubstring,
+    BeforeSubstring,
     AfterSubstring,
     BeforeAndAfterSubstring,
 }
 
 data class RenderingInstructions(val firstLine: FirstLineRendering, val shouldRenderBlock: Boolean)
 
-fun determineRendering(textLines: List<String>, oldSuffix: String): RenderingInstructions {
+fun determineRendering(textLines: List<String>, replaceSubstring: String): RenderingInstructions {
     if (textLines.isEmpty()) return RenderingInstructions(FirstLineRendering.None, false)
 
     val shouldRenderBlock = textLines.size > 1
 
     if (textLines[0].trim().isNotEmpty()) {
-        if (oldSuffix.trim().isNotEmpty()) {
-            val endIndex = textLines[0].indexOf(oldSuffix)
+        if (replaceSubstring.trim().isNotEmpty()) {
+            val endIndex = textLines[0].indexOf(replaceSubstring)
 
             if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSubstring, shouldRenderBlock)
             else if (endIndex > 0) return RenderingInstructions(
@@ -25,8 +25,7 @@ fun determineRendering(textLines: List<String>, oldSuffix: String): RenderingIns
                 shouldRenderBlock
             )
         }
-
-        return RenderingInstructions(FirstLineRendering.NoSubstring, shouldRenderBlock)
+        return RenderingInstructions(FirstLineRendering.BeforeSubstring, shouldRenderBlock)
     }
 
     return RenderingInstructions(FirstLineRendering.None, shouldRenderBlock)

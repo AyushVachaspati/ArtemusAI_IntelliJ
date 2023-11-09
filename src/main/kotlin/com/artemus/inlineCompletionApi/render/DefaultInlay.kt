@@ -1,6 +1,7 @@
 package com.artemus.inlineCompletionApi.render
 
 import com.artemus.inlineCompletionApi.CompletionPreviewInsertionHint
+import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.general.Utils
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
@@ -10,6 +11,7 @@ import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
+import com.jetbrains.rd.util.printlnError
 import java.awt.Rectangle
 
 
@@ -70,9 +72,9 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
-    override fun render(editor: Editor, completion: String) {
+    override fun render(editor: Editor, completion: InlineCompletionItem) {
         // TODO: implement completion interface with insertText and Range parameters
-        var lines = Utils.asLines(completion)   // completion.insertText is the API I want
+        var lines = Utils.asLines(completion.insertText)   // completion.insertText is the API I want
         if (lines.isEmpty()) return
 
         val tabSize = getTabSize(editor)
@@ -84,28 +86,51 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         var endOffset = editor.caretModel.visualLineEnd
         endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
-        val oldSuffix = editor.document.getText(TextRange(startOffset, endOffset)) // old suffix is just until eol for us
 
-        val endIndex = firstLine.indexOf(oldSuffix)
+        if(startOffset != completion.startOffset){
+            printlnError("Current Offset $startOffset, Replace Start Offset ${completion.startOffset} are not compatible")
+            return
+        }
 
-        val instructions = determineRendering(lines, oldSuffix)
+        val oldSuffixSameLine = editor.document.getText(TextRange(startOffset, endOffset)) // getting text till EOL
+        val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is what the user gives offset for
+        val oldEndIndex = oldSuffixSameLine.indexOf(replaceSuffix)
+
+        //Not allowed to replace more than up to current line-end right now
+        if(oldEndIndex == -1){
+            printlnError("Not allowed to replace more than current line. Check if completion.endOffset is correct")
+            return
+        }
+
+        val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
+
+        // Only substring of First line is allowed to be replaced right now
+        // if replace range is not substring we don't show preview
+        if(endIndex == -1){
+            printlnError("'$replaceSuffix'")
+            printlnError("is not a substring of ")
+            printlnError("'${firstLine}'")
+            return
+        }
+
+
+        val instructions = determineRendering(lines, replaceSuffix)
+        val currentPosition = editor.caretModel.logicalPosition
+        val r = Runnable {
+            editor.document.insertString(startOffset+replaceSuffix.length, "\n")
+            this.editor = editor
+            editor.caretModel.moveToLogicalPosition(currentPosition)
+        }
+        WriteCommandAction.runWriteCommandAction(editor.project, r)
+
+        val currOffset = editor.caretModel.offset
+        val newLine = editor.document.getLineNumber(currOffset) + 1
+        val newOffset = editor.document.getLineStartOffset(newLine)
 
         when (instructions.firstLine) {
-            FirstLineRendering.NoSubstring -> {
+            FirstLineRendering.BeforeSubstring -> {
                 if(instructions.shouldRenderBlock){
-                    val currentPosition = editor.caretModel.logicalPosition
-                    val r = Runnable {
-                        editor.document.insertString(startOffset, "\n")
-                        this.editor = editor
-                        editor.caretModel.moveToLogicalPosition(currentPosition)
-                    }
-                    WriteCommandAction.runWriteCommandAction(editor.project, r)
-
-                    val currOffset = editor.caretModel.offset
-                    val newLine = editor.document.getLineNumber(currOffset) + 1
-                    val newOffset = editor.document.getLineStartOffset(newLine)
-
-                    renderNoSubstring(editor, firstLine, currOffset)
+                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
                     if(lines.size>2) {
                         val otherLines = lines.subList(1, lines.size - 1)
                         renderBlock(otherLines, editor, newOffset, true)
@@ -113,24 +138,39 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                     renderNoSubstring(editor, lastLine, newOffset)
                 }
                 else{
-                    renderNoSubstring(editor, firstLine, startOffset)
+                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
                 }
             }
+
             FirstLineRendering.AfterSubstring -> {
-                renderAfterSubstring(endIndex, oldSuffix, firstLine, editor, startOffset)
-                if(instructions.shouldRenderBlock) {
-                    val otherLines = lines.subList(1, lines.size)
-                    renderBlock(otherLines, editor, startOffset, false)
+                if(instructions.shouldRenderBlock){
+                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                    if(lines.size>2) {
+                        val otherLines = lines.subList(1, lines.size - 1)
+                        renderBlock(otherLines, editor, newOffset, true)
+                    }
+                    renderNoSubstring(editor, lastLine, newOffset)
+                }
+                else{
+                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
                 }
             }
+
             FirstLineRendering.BeforeAndAfterSubstring -> {
-                renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
-                if(instructions.shouldRenderBlock) {
-                    val otherLines = lines.subList(1, lines.size)
-                    renderBlock(otherLines, editor, startOffset, false)
+                if(instructions.shouldRenderBlock){
+                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                    if(lines.size>2) {
+                        val otherLines = lines.subList(1, lines.size - 1)
+                        renderBlock(otherLines, editor, newOffset, true)
+                    }
+                    renderNoSubstring(editor, lastLine, newOffset)
                 }
-                renderAfterSubstring(endIndex, oldSuffix, firstLine, editor, startOffset)
+                else{
+                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                }
             }
+
             FirstLineRendering.None -> {}
         }
 
