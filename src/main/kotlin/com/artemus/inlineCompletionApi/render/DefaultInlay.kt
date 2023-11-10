@@ -8,6 +8,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.Inlay
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
@@ -63,12 +64,16 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             val project = editor?.project
             if(project!=null)  {
                 UndoManager.getInstance(project).undo(
-                    FileEditorManager.getInstance(project).getSelectedEditor(editor!!.virtualFile)
-                )
+                    FileEditorManager
+                        .getInstance(project).
+                        getSelectedEditor(
+                            FileDocumentManager.
+                            getInstance().
+                            getFile(editor!!.document)!!)
+                    )
+                }
             }
         }
-
-    }
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
