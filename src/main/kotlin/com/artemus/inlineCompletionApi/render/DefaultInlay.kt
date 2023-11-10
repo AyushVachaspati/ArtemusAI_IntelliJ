@@ -61,7 +61,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             // TODO: Removes the \n we add for block rendering. We need good testing for this.
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
-            val project = editor?.project
+            val project = editor!!.project
             if(project!=null)  {
                 UndoManager.getInstance(project).undo(
                     FileEditorManager
