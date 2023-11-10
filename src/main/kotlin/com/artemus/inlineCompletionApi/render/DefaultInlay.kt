@@ -62,24 +62,19 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
             val project = editor!!.project
-            if(project!=null)  {
-                UndoManager.getInstance(project).undo(
-                    FileEditorManager
-                        .getInstance(project).
-                        getSelectedEditor(
-                            FileDocumentManager.
-                            getInstance().
-                            getFile(editor!!.document)!!)
-                    )
-                }
-            }
+            UndoManager.getInstance(project!!)
+                .undo(FileEditorManager.getInstance(project)
+                    .getSelectedEditor(FileDocumentManager.getInstance().getFile(editor!!.document)!!)
+                )
         }
+    }
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
     override fun render(editor: Editor, completion: InlineCompletionItem) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion.insertText)   // completion.insertText is the API I want
+        println(lines)
         if (lines.isEmpty()) return
 
         val tabSize = getTabSize(editor)
@@ -120,29 +115,36 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
 
         val instructions = determineRendering(lines, replaceSuffix)
-        val currentPosition = editor.caretModel.logicalPosition
-        val r = Runnable {
-            editor.document.insertString(startOffset+replaceSuffix.length, "\n")
-            this.editor = editor
-            editor.caretModel.moveToLogicalPosition(currentPosition)
-        }
-        WriteCommandAction.runWriteCommandAction(editor.project,
-            "AddNextLineForPreview",
-            "InlinePreviewCommands", r)
 
-        val currOffset = editor.caretModel.offset
-        val newLine = editor.document.getLineNumber(currOffset) + 1
-        val newOffset = editor.document.getLineStartOffset(newLine)
+        var newOffset: Int? = null
+        if(instructions.shouldRenderBlock) {
+            val currentPosition = editor.caretModel.logicalPosition
+            val r = Runnable {
+                editor.document.insertString(startOffset + replaceSuffix.length, "\n")
+                this.editor = editor
+                editor.caretModel.moveToLogicalPosition(currentPosition)
+            }
+            WriteCommandAction.runWriteCommandAction(
+                editor.project,
+                "AddNextLineForPreview",
+                "InlinePreviewCommands", r
+            )
+
+            val currOffset = editor.caretModel.offset
+            val newLine = editor.document.getLineNumber(currOffset) + 1
+            newOffset = editor.document.getLineStartOffset(newLine)
+        }
 
         when (instructions.firstLine) {
             FirstLineRendering.BeforeSubstring -> {
+                println("Before Suffix")
                 if(instructions.shouldRenderBlock){
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
                     if(lines.size>2) {
                         val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset, true)
+                        renderBlock(otherLines, editor, newOffset!!)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset)
+                    renderNoSubstring(editor, lastLine, newOffset!!)
                 }
                 else{
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
@@ -150,13 +152,14 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             }
 
             FirstLineRendering.AfterSubstring -> {
+                println("After Suffix")
                 if(instructions.shouldRenderBlock){
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
                     if(lines.size>2) {
                         val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset, true)
+                        renderBlock(otherLines, editor, newOffset!!)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset)
+                    renderNoSubstring(editor, lastLine, newOffset!!)
                 }
                 else{
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
@@ -164,14 +167,15 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             }
 
             FirstLineRendering.BeforeAndAfterSubstring -> {
+                println("Before and after Suffix")
                 if(instructions.shouldRenderBlock){
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
                     if(lines.size>2) {
                         val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset, true)
+                        renderBlock(otherLines, editor, newOffset!!)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset)
+                    renderNoSubstring(editor, lastLine, newOffset!!)
                 }
                 else{
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
@@ -192,7 +196,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         lines: List<String>,
         editor: Editor,
         offset: Int,
-        showAbove: Boolean = true
     ) {
         val blockElementRenderer = BlockElementRenderer(editor, lines, false)
         val element = editor
@@ -200,7 +203,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             .addBlockElement(
                 offset,
                 true,
-                showAbove,
+                true,
                 1,
                 blockElementRenderer
             )

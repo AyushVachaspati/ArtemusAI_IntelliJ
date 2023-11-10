@@ -1,7 +1,7 @@
 package com.artemus.inlineCompletionApi
 
+import com.artemus.inlineCompletionApi.listeners.CaretMoveListener
 import com.artemus.inlineCompletionApi.listeners.InlineFocusListener
-import com.artemus.inlineCompletionApi.listeners.MouseClickListener
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
@@ -19,14 +19,14 @@ class CompletionPreview private constructor(
 ) : Disposable {
 
     private var inlineFocusListener: InlineFocusListener
-    private var mouseClickListener: MouseClickListener
+    private var caretMoveListener: CaretMoveListener
     private var artemusInlayForCurrentPreview: ArtemusInlay
     private var currentIndex = 0
 
     init {
         EditorUtil.disposeWithEditor(editor, this)
         inlineFocusListener =  InlineFocusListener(this)
-        mouseClickListener = MouseClickListener(this)
+        caretMoveListener = CaretMoveListener(this)
         artemusInlayForCurrentPreview = ArtemusInlay.create(this)
     }
 
@@ -40,7 +40,7 @@ class CompletionPreview private constructor(
         Disposer.dispose(artemusInlayForCurrentPreview)
         artemusInlayForCurrentPreview = ArtemusInlay.create(this)
 
-        showPreview();
+        showPreview()
     }
 
 
@@ -79,8 +79,8 @@ class CompletionPreview private constructor(
 
             val completion = completions[currentIndex]
             val startOffset = editor.caretModel.offset
-            var endOffset = editor.caretModel.visualLineEnd
-            endOffset = if (endOffset==startOffset) endOffset else endOffset-1
+//            var endOffset = editor.caretModel.visualLineEnd
+//            endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
             val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is just until eol for us
             val endIndex = completion.insertText.indexOf(replaceSuffix)
@@ -130,6 +130,7 @@ class CompletionPreview private constructor(
         }
 
         fun clear(editor: Editor) {
+            println("Disposing")
             val completionPreview = getInstance(editor)
             if (completionPreview != null) {
                 Disposer.dispose(completionPreview)

@@ -18,6 +18,9 @@ class ShowTestPreveiw: AnAction() {
                         editor.caretModel.offset),
                     InlineCompletionItem("This is a Test1\n\tThis is a Test2\n  This is a Test3\n    This is a Test4\n        This is a Test5",
                         editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-5),
+                    InlineCompletionItem("This is a Test1\n\tThis is a Test2\n  This is a Test3\n    This is a Test4\n        This is a Test5",
+                        editor.caretModel.offset,
                         editor.caretModel.visualLineEnd-1),
 
                     InlineCompletionItem("\t\twell This is a Test\n\tThis is a Test2",
@@ -26,13 +29,19 @@ class ShowTestPreveiw: AnAction() {
                     InlineCompletionItem("\t\twell This is a Test\n\tThis is a Test2",
                         editor.caretModel.offset,
                         editor.caretModel.visualLineEnd-5),
+                    InlineCompletionItem("\t\twell This is a Test\n\tThis is a Test2",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
 
                     InlineCompletionItem("\t\twell This is a Test",
                         editor.caretModel.offset,
                         editor.caretModel.offset),
                     InlineCompletionItem("\t\twell This is a Test",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-5)
+                        editor.caretModel.visualLineEnd-5),
+                    InlineCompletionItem("\t\twell This is a Test",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1)
                 )
             )
         }

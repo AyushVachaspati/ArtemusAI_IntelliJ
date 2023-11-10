@@ -19,4 +19,5 @@ class InlineFocusListener(private val completionPreview: CompletionPreview) : Fo
     override fun focusLost(editor: Editor) {
         CompletionPreview.clear(editor)
     }
+
 }
