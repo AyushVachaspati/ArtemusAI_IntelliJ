@@ -74,6 +74,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
     override fun render(editor: Editor, completion: InlineCompletionItem) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion.insertText)   // completion.insertText is the API I want
+        println()
         println(lines)
         if (lines.isEmpty()) return
 
@@ -137,9 +138,8 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
         when (instructions.firstLine) {
             FirstLineRendering.BeforeSubstring -> {
-                println("Before Suffix")
                 if(instructions.shouldRenderBlock){
-                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                    renderBeforeSubstring(firstLine, endIndex+1, editor, startOffset)
                     if(lines.size>2) {
                         val otherLines = lines.subList(1, lines.size - 1)
                         renderBlock(otherLines, editor, newOffset!!)
@@ -147,12 +147,11 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                     renderNoSubstring(editor, lastLine, newOffset!!)
                 }
                 else{
-                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                    renderBeforeSubstring(firstLine, endIndex+1, editor, startOffset)
                 }
             }
 
             FirstLineRendering.AfterSubstring -> {
-                println("After Suffix")
                 if(instructions.shouldRenderBlock){
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
                     if(lines.size>2) {
@@ -167,7 +166,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             }
 
             FirstLineRendering.BeforeAndAfterSubstring -> {
-                println("Before and after Suffix")
                 if(instructions.shouldRenderBlock){
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
@@ -179,6 +177,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                 }
                 else{
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
                 }
             }
 

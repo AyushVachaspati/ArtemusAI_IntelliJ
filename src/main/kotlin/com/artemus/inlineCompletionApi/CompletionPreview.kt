@@ -130,7 +130,6 @@ class CompletionPreview private constructor(
         }
 
         fun clear(editor: Editor) {
-            println("Disposing")
             val completionPreview = getInstance(editor)
             if (completionPreview != null) {
                 Disposer.dispose(completionPreview)
