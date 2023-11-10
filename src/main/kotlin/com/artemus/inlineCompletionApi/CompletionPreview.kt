@@ -1,5 +1,7 @@
 package com.artemus.inlineCompletionApi
 
+import com.artemus.inlineCompletionApi.listeners.InlineFocusListener
+import com.artemus.inlineCompletionApi.listeners.MouseClickListener
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
@@ -15,11 +17,16 @@ import com.jetbrains.rd.util.printlnError
 class CompletionPreview private constructor(
     val editor: Editor, private val completions: List<InlineCompletionItem>
 ) : Disposable {
+
+    private var inlineFocusListener: InlineFocusListener
+    private var mouseClickListener: MouseClickListener
     private var artemusInlayForCurrentPreview: ArtemusInlay
     private var currentIndex = 0
 
     init {
         EditorUtil.disposeWithEditor(editor, this)
+        inlineFocusListener =  InlineFocusListener(this)
+        mouseClickListener = MouseClickListener(this)
         artemusInlayForCurrentPreview = ArtemusInlay.create(this)
     }
 

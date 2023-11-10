@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 
-class EscapeHandler(private val myOriginalHandler: EditorActionHandler) : EditorActionHandler() {
+class CaretMoveHandler(private val myOriginalHandler: EditorActionHandler) : EditorActionHandler() {
 
     public override fun doExecute(editor: Editor, caret: Caret?, dataContext: DataContext) {
         CompletionPreview.clear(editor)
@@ -26,6 +26,6 @@ class EscapeHandler(private val myOriginalHandler: EditorActionHandler) : Editor
     }
 
     companion object {
-        const val ACTION_ID = "EscapeRemovePreviewHandler"
+        const val ACTION_ID = "CaretRemovePreviewHandler"
     }
 }

@@ -126,7 +126,9 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             this.editor = editor
             editor.caretModel.moveToLogicalPosition(currentPosition)
         }
-        WriteCommandAction.runWriteCommandAction(editor.project, r)
+        WriteCommandAction.runWriteCommandAction(editor.project,
+            "AddNextLineForPreview",
+            "InlinePreviewCommands", r)
 
         val currOffset = editor.caretModel.offset
         val newLine = editor.document.getLineNumber(currOffset) + 1

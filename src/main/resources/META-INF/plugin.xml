@@ -26,8 +26,15 @@
   <extensions defaultExtensionNs="com.intellij">
     <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>
     <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.EscapeHandler"
-                         id="previewEscape" order="before hide-hints"/>
-
+                         id="RemovePreviewEscape" order="before hide-hints"/>
+    <editorActionHandler action="EditorRight" implementationClass="com.artemus.inlineCompletionApi.CaretMoveHandler"
+                         id="RemovePreviewArrowRight" order="before hide-hints"/>
+    <editorActionHandler action="EditorLeft" implementationClass="com.artemus.inlineCompletionApi.CaretMoveHandler"
+                         id="RemovePreviewArrowLeft" order="before hide-hints"/>
+    <editorActionHandler action="EditorUp" implementationClass="com.artemus.inlineCompletionApi.CaretMoveHandler"
+                         id="RemovePreviewArrowUp" order="before hide-hints"/>
+    <editorActionHandler action="EditorDown" implementationClass="com.artemus.inlineCompletionApi.CaretMoveHandler"
+                         id="RemovePreviewArrowDown" order="before hide-hints"/>
   </extensions>
 
   <actions>
