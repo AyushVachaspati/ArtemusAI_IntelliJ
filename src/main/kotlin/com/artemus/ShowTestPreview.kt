@@ -5,6 +5,7 @@ import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.editor.Editor
 
 // these are when just inserting code and not replacing any substring
 
@@ -12,7 +13,26 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 //editor.caretModel.offset,
 //editor.caretModel.offset),
 
-class ShowTestPreveiw: AnAction() {
+class ShowTestPreview: AnAction() {
+    public fun createPreview(editor: Editor, completion: String){
+        println("Test Action Performed")
+        if(editor!=null) {
+            CompletionPreview.createInstance(
+                editor,
+                listOf(
+                    // These tests expect "This is" as the text on the current line. and cursor at the start of line
+                    // Also test with caret in the middle of line
+                    // also test with caret at the end of line
+                    InlineCompletionItem(
+                        completion,
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd - 1
+                    )
+                )
+            )
+        }
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         println("Test Action Performed")
         val editor = e.getData(PlatformDataKeys.EDITOR)
@@ -34,13 +54,13 @@ class ShowTestPreveiw: AnAction() {
 
                     InlineCompletionItem("Before Completion This is",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("This is After Completion",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("Before Completion This is After Completion",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
 
 
                     // These tests are same as above but with empty next line
@@ -56,13 +76,13 @@ class ShowTestPreveiw: AnAction() {
 
                     InlineCompletionItem("Before Completion This is\n",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("This is After Completion\n",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("Before Completion This is After Completion\n",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
 
 
 
@@ -83,15 +103,15 @@ class ShowTestPreveiw: AnAction() {
                     InlineCompletionItem("Before Completion This is\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("This is After Completion\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("Before Completion This is After Completion\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
 
 
                     // These tests are same as above but with empty next line
@@ -115,17 +135,17 @@ class ShowTestPreveiw: AnAction() {
                             "MIDDLE LINE\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("This is After Completion\n" +
                             "MIDDLE LINE\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
                     InlineCompletionItem("Before Completion This is After Completion\n" +
                             "MIDDLE LINE\n" +
                             "MIDDLE LINE",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-7),
+                        editor.caretModel.visualLineEnd-4),
 
 
 

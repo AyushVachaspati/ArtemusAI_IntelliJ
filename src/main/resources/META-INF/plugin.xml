@@ -25,22 +25,38 @@
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
     <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>
+
+    <!-- Handler for Explicitly Cancelling Completion Previews -->
     <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.EscapeHandler"
-                         id="RemovePreviewEscape" order="before hide-hints"/>
+                         id="RemovePreviewEscape" order="last"/>
+    <editorActionHandler action="EditorEnter" implementationClass="com.artemus.inlineCompletionApi.EnterHandler"
+                         id="RemovePreviewEnter" order="last"/>
     <editorActionHandler action="EditorBackSpace" implementationClass="com.artemus.inlineCompletionApi.BackSpaceHandler"
-                         id="RemovePreviewBackSpace" order="before hide-hints"/>
+                         id="RemovePreviewBackSpace" order="last"/>
+    <editorActionHandler action="EditorTab" implementationClass="com.artemus.inlineCompletionApi.TabHandler"
+                         id="RemovePreviewTab" order="last"/>
+
+    <!-- Handlers for Triggering Completion Preview -->
     <typedHandler implementation="com.artemus.inlineCompletionApi.KeyPressHandler" />
+
+<!--    NOT USING DOCUMENT LISTENER SINCE IT INTERFERES WITH UNDO IN INLAY RENDER DISPOSE -->
+<!--    <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.DocumentListener"/>-->
+
+    <completion.contributor language="any"
+                            implementationClass="com.artemus.inlineCompletionApi.lookAheadCompletion.LookAheadCompletionContributor"
+                            order="last"/>
+
   </extensions>
 
   <actions>
 
     <action class="com.artemus.inlineCompletionApi.ShowNextInlineCompletion"
-            id="ShowNextTabnineInlineCompletionAction" text="Show Next Inline Completion">
+            id="ShowNextInlineCompletionAction" text="Show Next Inline Completion">
       <keyboard-shortcut first-keystroke="alt CLOSE_BRACKET" keymap="$default"/>
     </action>
 
     <action class="com.artemus.inlineCompletionApi.ShowPreviousInlineCompletion"
-            id="ShowPreviousTabnineInlineCompletionAction" text="Show Previous Inline Completion">
+            id="ShowPreviousInlineCompletionAction" text="Show Previous Inline Completion">
       <keyboard-shortcut first-keystroke="alt OPEN_BRACKET" keymap="$default"/>
     </action>
 
@@ -49,9 +65,9 @@
       <keyboard-shortcut first-keystroke="TAB" keymap="$default" />
     </action>
 
-    <action class="com.artemus.ShowTestPreveiw"
+    <action class="com.artemus.ShowTestPreview"
             id="ShowTestPreveiw" text="Trigger Test Action">
-      <keyboard-shortcut first-keystroke="alt 0" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="ctrl QUOTE" keymap="$default"/>
     </action>
   </actions>
 

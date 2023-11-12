@@ -4,15 +4,11 @@ package com.artemus.inlineCompletionApi.render
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.colors.ColorKey
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.ui.JBColor
-//import com.tabnineCommon.capabilities.CapabilitiesService
-//import com.tabnineCommon.capabilities.Capability
-//import com.tabnineCommon.userSettings.AppSettingsState
 import java.awt.Color
 import java.awt.Font
 import java.awt.font.TextAttribute
@@ -69,20 +65,22 @@ object GraphicsUtils {
                 (color.blue * color.blue * 0.068)
         )
     }
-}
 
-fun getTabSize(editor: Editor): Int? {
-    if (!ApplicationManager.getApplication().isReadAccessAllowed) {
-        Logger.getInstance("GraphicsUtils").warn("Read access is not allowed here - returning null")
+    fun getTabSize(editor: Editor): Int? {
+        if (!ApplicationManager.getApplication().isReadAccessAllowed) {
+            Logger.getInstance("GraphicsUtils").warn("Read access is not allowed here - returning null")
 //        failIfAlpha()
-        return null
-    }
-    val commonCodeStyleSettings = editor.project
-        ?.let { PsiDocumentManager.getInstance(it).getPsiFile(editor.document) }
-        ?.let { CommonCodeStyleSettings(it.language) }
+            return null
+        }
+        val commonCodeStyleSettings = editor.project
+            ?.let { PsiDocumentManager.getInstance(it).getPsiFile(editor.document) }
+            ?.let { CommonCodeStyleSettings(it.language) }
 
-    return commonCodeStyleSettings?.indentOptions?.TAB_SIZE ?: editor.settings.getTabSize(editor.project)
+        return commonCodeStyleSettings?.indentOptions?.TAB_SIZE ?: editor.settings.getTabSize(editor.project)
+    }
 }
+
+
 
 //private fun failIfAlpha() {
 //    val isAlpha = CapabilitiesService.getInstance().isCapabilityEnabled(

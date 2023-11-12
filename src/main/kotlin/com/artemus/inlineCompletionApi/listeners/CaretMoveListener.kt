@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.util.ObjectUtils
+import com.jetbrains.rd.util.string.println
 
 class CaretMoveListener(private var completionPreview: CompletionPreview?) : CaretListener {
     init {
@@ -19,11 +20,12 @@ class CaretMoveListener(private var completionPreview: CompletionPreview?) : Car
         if (completionPreview == null) return
 
         if(isSingleOffsetChange(event)){
+            // TODO: Should we use this to handle typing by the user? or can we use the bulk document change handler
             // User has typed something. This is handled by KeyPressHandler
             return
         }
 
-        completionPreview = null  // set to null to return from next recursive call instantly
+        completionPreview = null  // set to null to return from next recursive call instantly (recursion induced by undo in clear preview)
 
         event.editor.caretModel.moveToLogicalPosition(event.oldPosition) // move to old position so undo works correctly
         CompletionPreview.clear(event.editor)

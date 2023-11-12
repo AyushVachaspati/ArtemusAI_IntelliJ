@@ -1,15 +1,16 @@
 package com.artemus.inlineCompletionApi
 
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 
-class EscapeHandler(private val myOriginalHandler: EditorActionHandler) : EditorActionHandler() {
-
+class EnterHandler(private val myOriginalHandler: EditorActionHandler) : EditorActionHandler() {
     public override fun doExecute(editor: Editor, caret: Caret?, dataContext: DataContext) {
-        println("escape called")
+        println("Enter Called")
+
+        // This does not count as caret offset change. So we need to cancel Preview here
+
         CompletionPreview.clear(editor)
 
         if (myOriginalHandler.isEnabled(editor, caret, dataContext)) {
@@ -22,9 +23,6 @@ class EscapeHandler(private val myOriginalHandler: EditorActionHandler) : Editor
         caret: Caret,
         dataContext: DataContext
     ): Boolean {
-        val preview = CompletionPreview.getInstance(editor)
-        return if (preview != null) {
-            true
-        } else myOriginalHandler.isEnabled(editor, caret, dataContext)
+        return true
     }
 }

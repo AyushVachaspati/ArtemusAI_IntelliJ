@@ -3,6 +3,8 @@ package com.artemus.inlineCompletionApi.render
 import com.artemus.inlineCompletionApi.CompletionPreviewInsertionHint
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.general.Utils
+import com.artemus.inlineCompletionApi.render.GraphicsUtils.getTabSize
+import com.artemus.inlineCompletionApi.render.inlineStringProcessor.determineRendering
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
@@ -74,8 +76,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
     override fun render(editor: Editor, completion: InlineCompletionItem) {
         // TODO: implement completion interface with insertText and Range parameters
         var lines = Utils.asLines(completion.insertText)   // completion.insertText is the API I want
-        println()
-        println(lines)
         if (lines.isEmpty()) return
 
         val tabSize = getTabSize(editor)
