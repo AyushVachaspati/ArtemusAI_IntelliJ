@@ -40,7 +40,7 @@
     <typedHandler implementation="com.artemus.inlineCompletionApi.KeyPressHandler" />
 
 <!--    NOT USING DOCUMENT LISTENER SINCE IT INTERFERES WITH UNDO IN INLAY RENDER DISPOSE -->
-<!--    <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.DocumentListener"/>-->
+    <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.DocumentListener"/>
 
     <completion.contributor language="any"
                             implementationClass="com.artemus.inlineCompletionApi.lookAheadCompletion.LookAheadCompletionContributor"

@@ -1,6 +1,7 @@
 package com.artemus.inlineCompletionApi.listeners
 
 import com.artemus.inlineCompletionApi.CompletionPreview
+import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
@@ -15,6 +16,8 @@ class CaretMoveListener(private var completionPreview: CompletionPreview?) : Car
     }
 
     override fun caretPositionChanged(event: CaretEvent) {
+        println("Caret position changed")
+
         // The undo operation to remove \n causes recursive call to caretPositonChanged,
         // which causes issues. So this condition handles that extra call.
         if (completionPreview == null) return

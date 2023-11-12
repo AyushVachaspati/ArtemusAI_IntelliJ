@@ -29,20 +29,23 @@ class CompletionPreview private constructor(
     init {
         // Validate that the completions provided are correct. Only keep the completions where replaceSuffix is substring
         // of first line of completion provided
-        for (it in completions.stream()) {
-            println("'${it.insertText}'")
-        }
         completions = completions.filter{
+            var error = false
             val firstLine = Utils.asLines(it.insertText)[0]
-            val replaceSuffix = editor.document.getText(TextRange(it.startOffset, it.endOffset)).trimEnd()
+            var replaceSuffix = ""
+            try {
+                replaceSuffix = editor.document.getText(TextRange(it.startOffset, it.endOffset)).trimEnd()
+            }
+            catch (e:Exception){
+                error = true
+            }
             val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
-            endIndex!= -1
+            if(error)
+                false
+            else
+                endIndex!= -1
         }
-        println()
-        println()
-        for (it in completions.stream()) {
-            println("'${it.insertText}'")
-        }
+
         // if none of the completions match.. throw and error and don't create the preview.
         if (completions.isEmpty()) {
             clear(editor)

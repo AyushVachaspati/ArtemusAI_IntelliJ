@@ -1,8 +1,6 @@
 package com.artemus.inlineCompletionApi.render
 
-import com.artemus.inlineCompletionApi.CompletionPreview
-import com.artemus.inlineCompletionApi.CompletionPreviewInsertionHint
-import com.artemus.inlineCompletionApi.InlineCompletionItem
+import com.artemus.inlineCompletionApi.*
 import com.artemus.inlineCompletionApi.general.Utils
 import com.artemus.inlineCompletionApi.render.GraphicsUtils.getTabSize
 import com.artemus.inlineCompletionApi.render.inlineStringProcessor.determineRendering
@@ -17,6 +15,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.TextRange
 import com.jetbrains.rd.util.printlnError
+import junit.framework.AssertionFailedError
 import java.awt.Rectangle
 
 
@@ -66,10 +65,18 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
             val project = editor!!.project
-            UndoManager.getInstance(project!!)
-                .undo(FileEditorManager.getInstance(project)
-                    .getSelectedEditor(FileDocumentManager.getInstance().getFile(editor!!.document)!!)
-                )
+            val offset = editor!!.caretModel.offset
+            val undoManager = UndoManager.getInstance(project!!)
+            val fileEditor = FileEditorManager.getInstance(project)
+                .getSelectedEditor(FileDocumentManager.getInstance().getFile(editor!!.document)!!)
+
+            if(undoManager.isUndoAvailable(fileEditor)){
+                // should this be a global variable
+                GlobalState.isArtemusUndoInProgress = true
+                UndoManager.getInstance(project!!).undo(fileEditor)
+                GlobalState.isArtemusUndoInProgress = false
+            }
+            editor!!.caretModel.moveToOffset(offset)
         }
     }
 

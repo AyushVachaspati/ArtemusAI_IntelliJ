@@ -42,19 +42,9 @@ class ShowTestPreview: AnAction() {
                     // These tests expect "This is" as the text on the current line. and cursor at the start of line
                     // Also test with caret in the middle of line
                     // also test with caret at the end of line
-//                    InlineCompletionItem("Before Completion This is",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("This is After Completion",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("Before Completion This is After Completion",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-
                     InlineCompletionItem("Before Completion This is",
                         editor.caretModel.offset,
-                        editor.caretModel.visualLineEnd-1),
+                        editor.caretModel.offset),
                     InlineCompletionItem("This is After Completion",
                         editor.caretModel.offset,
                         editor.caretModel.visualLineEnd-1),
@@ -62,149 +52,159 @@ class ShowTestPreview: AnAction() {
                         editor.caretModel.offset,
                         editor.caretModel.visualLineEnd-1),
 
+                    InlineCompletionItem("Before Completion This is",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("This is After Completion",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("Before Completion This is After Completion",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
 
-//                    // These tests are same as above but with empty next line
-//                    InlineCompletionItem("Before Completion This is\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("Before Completion This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//
-//                    InlineCompletionItem("Before Completion This is\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("Before Completion This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//
-//
-//
-//                    // this is stuff with extra line in the middle
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//
-//
-//                    // These tests are same as above but with empty next line
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-1),
-//
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.visualLineEnd-4),
-//
-//
-//
-//
-//
-//                    InlineCompletionItem("Before Completion This is",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("This is After Completion",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("Before Completion This is After Completion",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//
-//
-//                    // These tests are same as above but with empty next line
-//                    InlineCompletionItem("Before Completion This is\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("Before Completion This is After Completion\n",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//
-//
-//                    // this is stuff with extra line in the middle
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//
-//
-//                    // These tests are same as above but with empty next line
-//                    InlineCompletionItem("Before Completion This is\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
-//                    InlineCompletionItem("Before Completion This is After Completion\n" +
-//                            "MIDDLE LINE\n" +
-//                            "MIDDLE LINE",
-//                        editor.caretModel.offset,
-//                        editor.caretModel.offset),
+
+                    // These tests are same as above but with empty next line
+                    InlineCompletionItem("Before Completion This is\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("Before Completion This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+
+                    InlineCompletionItem("Before Completion This is\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("Before Completion This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+
+
+
+                    // this is stuff with extra line in the middle
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+
+
+                    // These tests are same as above but with empty next line
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-1),
+
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd-4),
+
+
+
+
+
+                    InlineCompletionItem("Before Completion This is",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("This is After Completion",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("Before Completion This is After Completion",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+
+
+                    // These tests are same as above but with empty next line
+                    InlineCompletionItem("Before Completion This is\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("Before Completion This is After Completion\n",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+
+
+                    // this is stuff with extra line in the middle
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+
+
+                    // These tests are same as above but with empty next line
+                    InlineCompletionItem("Before Completion This is\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
+                    InlineCompletionItem("Before Completion This is After Completion\n" +
+                            "MIDDLE LINE\n" +
+                            "MIDDLE LINE",
+                        editor.caretModel.offset,
+                        editor.caretModel.offset),
 
                 )
             )
