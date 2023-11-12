@@ -1,21 +1,24 @@
 package com.artemus.inlineCompletionApi
 
+import com.artemus.inlineCompletionApi.general.Utils
 import com.artemus.inlineCompletionApi.listeners.CaretMoveListener
 import com.artemus.inlineCompletionApi.listeners.InlineFocusListener
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
+import com.intellij.internal.performance.currentLatencyRecordKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.TextRange
 import com.intellij.refactoring.rename.inplace.InplaceRefactoring
 import com.jetbrains.rd.util.printlnError
 
 class CompletionPreview private constructor(
-    val editor: Editor, private val completions: List<InlineCompletionItem>
+    val editor: Editor, private var completions: List<InlineCompletionItem>
 ) : Disposable {
 
     private var inlineFocusListener: InlineFocusListener
@@ -24,6 +27,30 @@ class CompletionPreview private constructor(
     private var currentIndex = 0
 
     init {
+        // Validate that the completions provided are correct. Only keep the completions where replaceSuffix is substring
+        // of first line of completion provided
+        for (it in completions.stream()) {
+            println("'${it.insertText}'")
+        }
+        completions = completions.filter{
+            val firstLine = Utils.asLines(it.insertText)[0]
+            val replaceSuffix = editor.document.getText(TextRange(it.startOffset, it.endOffset)).trimEnd()
+            val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
+            endIndex!= -1
+        }
+        println()
+        println()
+        for (it in completions.stream()) {
+            println("'${it.insertText}'")
+        }
+        // if none of the completions match.. throw and error and don't create the preview.
+        if (completions.isEmpty()) {
+            clear(editor)
+            throw InvalidDataException(
+                "No valid Completions Provided.\n" +
+                        "Make sure replaceSuffix (based on Replace range) is SubString of first line of provided completion. "
+            )
+        }
         EditorUtil.disposeWithEditor(editor, this)
         inlineFocusListener =  InlineFocusListener(this)
         caretMoveListener = CaretMoveListener(this)
@@ -83,7 +110,7 @@ class CompletionPreview private constructor(
 //            endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
             val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is just until eol for us
-            val endIndex = completion.insertText.indexOf(replaceSuffix)
+            val endIndex = completion.insertText.indexOf(replaceSuffix.trimEnd())
             if(endIndex==-1){
                 // just insert as is
                 val r = Runnable {
@@ -102,6 +129,15 @@ class CompletionPreview private constructor(
             editor.caretModel.moveToOffset(startOffset+completion.insertText.length)
       }
 
+    fun getCompletions(): List<InlineCompletionItem> {
+        return completions
+    }
+
+
+    fun getCurrentIndex(): Int {
+        return currentIndex
+    }
+
     override fun dispose() {
         editor.putUserData(INLINE_COMPLETION_PREVIEW, null)
     }
@@ -117,11 +153,6 @@ class CompletionPreview private constructor(
             val preview = CompletionPreview(editor, completions)
             editor.putUserData(INLINE_COMPLETION_PREVIEW, preview)
             return preview.showPreview()
-        }
-
-        fun getCurrentCompletion(editor: Editor): InlineCompletionItem? {
-            val preview = getInstance(editor) ?: return null
-            return preview.currentCompletion
         }
 
         fun getInstance(editor: Editor?): CompletionPreview? {

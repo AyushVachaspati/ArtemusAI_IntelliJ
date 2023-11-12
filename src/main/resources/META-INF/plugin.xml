@@ -66,7 +66,7 @@
     </action>
 
     <action class="com.artemus.ShowTestPreview"
-            id="ShowTestPreveiw" text="Trigger Test Action">
+            id="ShowTestPreview" text="Trigger Test Action">
       <keyboard-shortcut first-keystroke="ctrl QUOTE" keymap="$default"/>
     </action>
   </actions>

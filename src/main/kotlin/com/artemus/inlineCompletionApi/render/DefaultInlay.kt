@@ -1,5 +1,6 @@
 package com.artemus.inlineCompletionApi.render
 
+import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.CompletionPreviewInsertionHint
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.general.Utils
@@ -13,6 +14,7 @@ import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.TextRange
 import com.jetbrains.rd.util.printlnError
 import java.awt.Rectangle
@@ -94,26 +96,17 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         }
 
         val oldSuffixSameLine = editor.document.getText(TextRange(startOffset, endOffset)) // getting text till EOL
-        val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is what the user gives offset for
+        var replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is what the user gives offset for
         val oldEndIndex = oldSuffixSameLine.indexOf(replaceSuffix)
 
         //Not allowed to replace more than up to current line-end right now
         if(oldEndIndex == -1){
-            printlnError("Not allowed to replace more than current line. Check if completion.endOffset is correct")
-            return
+            CompletionPreview.clear(editor)
+            throw InvalidDataException("Not allowed to replace more than current line. Check if completion.endOffset is correct")
         }
 
+        replaceSuffix = replaceSuffix.trimEnd()
         val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
-
-        // Only substring of First line is allowed to be replaced right now
-        // if replace range is not substring we don't show preview
-        if(endIndex == -1){
-            printlnError("'$replaceSuffix'")
-            printlnError("is not a substring of ")
-            printlnError("'${firstLine}'")
-            return
-        }
-
 
         val instructions = determineRendering(lines, replaceSuffix)
 
