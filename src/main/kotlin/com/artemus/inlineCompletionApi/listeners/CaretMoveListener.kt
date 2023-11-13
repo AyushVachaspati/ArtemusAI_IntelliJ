@@ -23,6 +23,7 @@ class CaretMoveListener(private var completionPreview: CompletionPreview?) : Car
         if (completionPreview == null) return
 
         if(isSingleOffsetChange(event)){
+            println("Is single offset change")
             // TODO: Should we use this to handle typing by the user? or can we use the bulk document change handler or
             // User has typed something which can be handled by KeyPressHandler
             return

@@ -120,6 +120,8 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val extraSuffix = oldSuffixSameLine.substring(oldEndIndex+replaceSuffix.length)
 
         if(completionType == CompletionType.LOOK_AHEAD_COMPLETION && extraSuffix.trimEnd().isNotEmpty()){
+            // TODO: Lookahead suggestion cannot handle next line (adding next line closes the popup menu)
+            //  if there's a way to handle this, then we can make the code common again.
             CompletionPreview.clear(editor)
             printlnError("Look Ahead Completion Must replace until end of line. Or it should be called from line end.")
             // TODO: Should we throw an exception here?
