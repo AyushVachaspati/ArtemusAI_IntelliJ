@@ -65,7 +65,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
             val project = editor!!.project
-            val offset = editor!!.caretModel.offset
+//            val offset = editor!!.caretModel.offset
             val undoManager = UndoManager.getInstance(project!!)
             val fileEditor = FileEditorManager.getInstance(project)
                 .getSelectedEditor(FileDocumentManager.getInstance().getFile(editor!!.document)!!)
@@ -76,15 +76,14 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                 UndoManager.getInstance(project!!).undo(fileEditor)
                 GlobalState.isArtemusUndoInProgress = false
             }
-            editor!!.caretModel.moveToOffset(offset)
+//            editor!!.caretModel.moveToOffset(offset)
         }
     }
 
     //TODO: Only 1 Substring in the first line is supported. More general solution with subsequence
     // and multi-line subsequence of the completion might be possible. But not necessary for current MVP
-    override fun render(editor: Editor, completion: InlineCompletionItem) {
-        // TODO: implement completion interface with insertText and Range parameters
-        var lines = Utils.asLines(completion.insertText)   // completion.insertText is the API I want
+    override fun render(editor: Editor, completion: InlineCompletionItem, completionType: CompletionType) {
+        var lines = Utils.asLines(completion.insertText)
         if (lines.isEmpty()) return
 
         val tabSize = getTabSize(editor)
@@ -98,7 +97,9 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
 
         if(startOffset != completion.startOffset){
-            printlnError("Current Offset $startOffset, Replace Start Offset ${completion.startOffset} are not compatible")
+            printlnError("Current Offset $startOffset, ReplaceRange Start Offset ${completion.startOffset} are not the same.")
+            CompletionPreview.clear(editor)
+            // TODO: Should we throw an exception here?
             return
         }
 
@@ -108,8 +109,12 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
         //Not allowed to replace more than up to current line-end right now
         if(oldEndIndex == -1){
+            val startLine = editor.document.getLineNumber(completion.startOffset)
+            val endLine = editor.document.getLineNumber(completion.endOffset)
             CompletionPreview.clear(editor)
-            throw InvalidDataException("Not allowed to replace more than current line. Check if completion.endOffset is correct")
+            printlnError("Only suffix in the same line is allowed to be replaced. Provided replace from line: $startLine to line: $endLine")
+            // TODO: Should we throw an exception here?
+            return
         }
 
         replaceSuffix = replaceSuffix.trimEnd()
