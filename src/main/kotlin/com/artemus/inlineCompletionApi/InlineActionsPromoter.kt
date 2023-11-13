@@ -1,5 +1,6 @@
 package com.artemus.inlineCompletionApi
 
+import com.artemus.inlineCompletionApi.actions.InlineCompletionAction
 import com.intellij.openapi.actionSystem.ActionPromoter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys

@@ -27,20 +27,20 @@
     <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>
 
     <!-- Handler for Explicitly Cancelling Completion Previews -->
-    <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.EscapeHandler"
+    <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.listeners.EscapeHandler"
                          id="RemovePreviewEscape" order="last"/>
-    <editorActionHandler action="EditorEnter" implementationClass="com.artemus.inlineCompletionApi.EnterHandler"
+    <editorActionHandler action="EditorEnter" implementationClass="com.artemus.inlineCompletionApi.listeners.EnterHandler"
                          id="RemovePreviewEnter" order="last"/>
-    <editorActionHandler action="EditorBackSpace" implementationClass="com.artemus.inlineCompletionApi.BackSpaceHandler"
+    <editorActionHandler action="EditorBackSpace" implementationClass="com.artemus.inlineCompletionApi.listeners.BackSpaceHandler"
                          id="RemovePreviewBackSpace" order="last"/>
-    <editorActionHandler action="EditorTab" implementationClass="com.artemus.inlineCompletionApi.TabHandler"
+    <editorActionHandler action="EditorTab" implementationClass="com.artemus.inlineCompletionApi.listeners.TabHandler"
                          id="RemovePreviewTab" order="last"/>
 
     <!-- Handlers for Triggering Completion Preview -->
-    <typedHandler implementation="com.artemus.inlineCompletionApi.KeyPressHandler" />
+    <typedHandler implementation="com.artemus.inlineCompletionApi.listeners.KeyPressHandler" />
 
 <!--    NOT USING DOCUMENT LISTENER SINCE IT INTERFERES WITH UNDO IN INLAY RENDER DISPOSE -->
-    <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.DocumentListener"/>
+    <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.listeners.DocumentListener"/>
 
     <completion.contributor language="any"
                             implementationClass="com.artemus.inlineCompletionApi.lookAheadCompletion.LookAheadCompletionContributor"
@@ -50,17 +50,17 @@
 
   <actions>
 
-    <action class="com.artemus.inlineCompletionApi.ShowNextInlineCompletion"
+    <action class="com.artemus.inlineCompletionApi.actions.ShowNextInlineCompletion"
             id="ShowNextInlineCompletionAction" text="Show Next Inline Completion">
       <keyboard-shortcut first-keystroke="alt CLOSE_BRACKET" keymap="$default"/>
     </action>
 
-    <action class="com.artemus.inlineCompletionApi.ShowPreviousInlineCompletion"
+    <action class="com.artemus.inlineCompletionApi.actions.ShowPreviousInlineCompletion"
             id="ShowPreviousInlineCompletionAction" text="Show Previous Inline Completion">
       <keyboard-shortcut first-keystroke="alt OPEN_BRACKET" keymap="$default"/>
     </action>
 
-    <action class="com.artemus.inlineCompletionApi.AcceptInlineCompletion"
+    <action class="com.artemus.inlineCompletionApi.actions.AcceptInlineCompletion"
             id="AcceptInlineCompletion" text="Accept Inline Completion">
       <keyboard-shortcut first-keystroke="TAB" keymap="$default" />
     </action>

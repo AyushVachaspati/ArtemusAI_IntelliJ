@@ -1,5 +1,6 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.listeners
 
+import com.artemus.inlineCompletionApi.CompletionPreview
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor

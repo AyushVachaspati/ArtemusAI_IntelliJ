@@ -1,5 +1,6 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.actions
 
+import com.artemus.inlineCompletionApi.CompletionPreview
 import com.intellij.codeInsight.hint.HintManagerImpl
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret

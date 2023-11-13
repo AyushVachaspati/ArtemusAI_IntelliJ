@@ -1,6 +1,6 @@
 package com.artemus.inlineCompletionApi.lookAheadCompletion
 
-import com.artemus.inlineCompletionApi.InlineLookupListener
+import com.artemus.inlineCompletionApi.listeners.InlineLookupListener
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupManager
 

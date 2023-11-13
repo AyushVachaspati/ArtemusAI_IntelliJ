@@ -2,6 +2,7 @@ package com.artemus.inlineCompletionApi.render
 
 import com.artemus.inlineCompletionApi.*
 import com.artemus.inlineCompletionApi.general.Utils
+import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.artemus.inlineCompletionApi.render.GraphicsUtils.getTabSize
 import com.artemus.inlineCompletionApi.render.inlineStringProcessor.determineRendering
 import com.intellij.openapi.Disposable
@@ -15,7 +16,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.TextRange
 import com.jetbrains.rd.util.printlnError
-import junit.framework.AssertionFailedError
 import java.awt.Rectangle
 
 

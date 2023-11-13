@@ -1,5 +1,6 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.actions
 
+import com.artemus.inlineCompletionApi.CompletionPreview
 import com.intellij.codeInsight.CodeInsightActionHandler
 import com.intellij.codeInsight.actions.BaseCodeInsightAction
 import com.intellij.openapi.editor.Editor

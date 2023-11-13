@@ -1,7 +1,8 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.listeners
 
+import com.artemus.inlineCompletionApi.CompletionPreview
+import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
-import com.intellij.credentialStore.createSecureRandom
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.FileType
@@ -88,14 +89,15 @@ class KeyPressHandler: TypedHandlerDelegate() {
     }
 
     private fun adjustCompletions(completions: List<InlineCompletionItem>, typedChar: Char,
-                                  currentCompletionItem: InlineCompletionItem): List<InlineCompletionItem> {
+                                  currentCompletionItem: InlineCompletionItem
+    ): List<InlineCompletionItem> {
         val result = ArrayList<InlineCompletionItem>()
         for (it in completions) {
             val newInsertText = it.insertText.substring(typedChar.toString().length)
             if (newInsertText.isNotEmpty()) {
                 if (it.insertText == currentCompletionItem.insertText)
                     // if the currently shown item matches the prefix. It should continue to be shown
-                    result.add(0,InlineCompletionItem(newInsertText, it.startOffset + 1, it.endOffset + 1) )
+                    result.add(0, InlineCompletionItem(newInsertText, it.startOffset + 1, it.endOffset + 1) )
                 else {
                     result.add(InlineCompletionItem(newInsertText, it.startOffset + 1, it.endOffset + 1))
                 }

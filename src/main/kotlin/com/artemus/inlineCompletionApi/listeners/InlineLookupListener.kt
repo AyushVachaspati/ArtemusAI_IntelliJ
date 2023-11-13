@@ -1,4 +1,4 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.listeners
 
 import com.artemus.ShowTestPreview
 import com.intellij.codeInsight.lookup.LookupEvent
