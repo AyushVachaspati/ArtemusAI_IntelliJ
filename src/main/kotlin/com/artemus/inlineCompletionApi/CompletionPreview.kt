@@ -17,8 +17,13 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.refactoring.rename.inplace.InplaceRefactoring
 import com.jetbrains.rd.util.printlnError
 
+enum class CompletionType{
+    INLINE_COMPLETION,
+    LOOK_AHEAD_COMPLETION
+}
+
 class CompletionPreview private constructor(
-    val editor: Editor, private var completions: List<InlineCompletionItem>
+    val editor: Editor, private var completions: List<InlineCompletionItem>, private var completionType: CompletionType
 ) : Disposable {
 
     private var inlineFocusListener: InlineFocusListener
@@ -84,7 +89,7 @@ class CompletionPreview private constructor(
             null
         } else try {
             editor.document.startGuardedBlockChecking()
-            artemusInlayForCurrentPreview.render(editor, completion)
+            artemusInlayForCurrentPreview.render(editor, completion, completionType)
             return completion
         } finally {
             editor.document.stopGuardedBlockChecking()
@@ -136,6 +141,9 @@ class CompletionPreview private constructor(
         return completions
     }
 
+    fun getCompletionType(): CompletionType {
+        return completionType
+    }
 
     fun getCurrentIndex(): Int {
         return currentIndex
@@ -149,11 +157,10 @@ class CompletionPreview private constructor(
     companion object {
         private val INLINE_COMPLETION_PREVIEW = Key.create<CompletionPreview>("INLINE_COMPLETION_PREVIEW")
         fun createInstance(
-            editor: Editor, completions: List<InlineCompletionItem>
+            editor: Editor, completions: List<InlineCompletionItem>, completionType: CompletionType
         ): InlineCompletionItem? {
-
             clear(editor)
-            val preview = CompletionPreview(editor, completions)
+            val preview = CompletionPreview(editor, completions, completionType)
             editor.putUserData(INLINE_COMPLETION_PREVIEW, preview)
             return preview.showPreview()
         }

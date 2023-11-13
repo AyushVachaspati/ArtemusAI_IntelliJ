@@ -117,39 +117,56 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             return
         }
 
+        val extraSuffix = oldSuffixSameLine.substring(oldEndIndex+replaceSuffix.length)
+
+        if(completionType == CompletionType.LOOK_AHEAD_COMPLETION && extraSuffix.trimEnd().isNotEmpty()){
+            CompletionPreview.clear(editor)
+            printlnError("Look Ahead Completion Must replace until end of line. Or it should be called from line end.")
+            // TODO: Should we throw an exception here?
+            return
+        }
+
         replaceSuffix = replaceSuffix.trimEnd()
         val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
 
-        val instructions = determineRendering(lines, replaceSuffix)
 
-        var newOffset: Int? = null
-        if(instructions.shouldRenderBlock) {
-            val currentPosition = editor.caretModel.logicalPosition
-            val r = Runnable {
-                editor.document.insertString(startOffset + replaceSuffix.length, "\n")
-                this.editor = editor
-                editor.caretModel.moveToLogicalPosition(currentPosition)
-            }
-            WriteCommandAction.runWriteCommandAction(
-                editor.project,
-                "AddNextLineForPreview",
-                "InlinePreviewCommands", r
-            )
+        val instructions = determineRendering(lines, replaceSuffix, extraSuffix)
 
-            val currOffset = editor.caretModel.offset
-            val newLine = editor.document.getLineNumber(currOffset) + 1
-            newOffset = editor.document.getLineStartOffset(newLine)
-        }
-
+        //TODO: Refactor this code to make it shorter and cleaner to read
         when (instructions.firstLine) {
             FirstLineRendering.BeforeSubstring -> {
                 if(instructions.shouldRenderBlock){
-                    renderBeforeSubstring(firstLine, endIndex+1, editor, startOffset)
-                    if(lines.size>2) {
-                        val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset!!)
+                    if(instructions.shouldRenderLastLine) {
+                        val currentPosition = editor.caretModel.logicalPosition
+                        val r = Runnable {
+                            editor.document.insertString(startOffset + replaceSuffix.length, "\n")
+                            this.editor = editor
+                            editor.caretModel.moveToLogicalPosition(currentPosition)
+                        }
+                        WriteCommandAction.runWriteCommandAction(
+                            editor.project,
+                            "AddNextLineForPreview",
+                            "InlinePreviewCommands", r
+                        )
+
+                        val currOffset = editor.caretModel.offset
+                        val newLine = editor.document.getLineNumber(currOffset) + 1
+                        val newOffset = editor.document.getLineStartOffset(newLine)
+
+
+                        renderBeforeSubstring(firstLine, endIndex + 1, editor, startOffset)
+                        if (lines.size > 2) {
+                            val otherLines = lines.subList(1, lines.size - 1)
+                            renderBlock(otherLines, editor, newOffset)
+                        }
+                        renderNoSubstring(editor, lastLine, newOffset)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset!!)
+                    else{
+                        renderBeforeSubstring(firstLine, endIndex + 1, editor, startOffset)
+                        // render all lines as a block
+                        val otherLines = lines.subList(1, lines.size)
+                        renderBlock(otherLines, editor, startOffset, false)
+                    }
                 }
                 else{
                     renderBeforeSubstring(firstLine, endIndex+1, editor, startOffset)
@@ -158,12 +175,38 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
             FirstLineRendering.AfterSubstring -> {
                 if(instructions.shouldRenderBlock){
-                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
-                    if(lines.size>2) {
-                        val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset!!)
+                    if(instructions.shouldRenderLastLine) {
+
+                        val currentPosition = editor.caretModel.logicalPosition
+                        val r = Runnable {
+                            editor.document.insertString(startOffset + replaceSuffix.length, "\n")
+                            this.editor = editor
+                            editor.caretModel.moveToLogicalPosition(currentPosition)
+                        }
+                        WriteCommandAction.runWriteCommandAction(
+                            editor.project,
+                            "AddNextLineForPreview",
+                            "InlinePreviewCommands", r
+                        )
+
+                        val currOffset = editor.caretModel.offset
+                        val newLine = editor.document.getLineNumber(currOffset) + 1
+                        val newOffset = editor.document.getLineStartOffset(newLine)
+
+
+                        renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                        if (lines.size > 2) {
+                            val otherLines = lines.subList(1, lines.size - 1)
+                            renderBlock(otherLines, editor, newOffset)
+                        }
+                        renderNoSubstring(editor, lastLine, newOffset)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset!!)
+                    else{
+                        renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                        val otherLines = lines.subList(1, lines.size)
+                        renderBlock(otherLines, editor, startOffset, false)
+
+                    }
                 }
                 else{
                     renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
@@ -172,13 +215,39 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
             FirstLineRendering.BeforeAndAfterSubstring -> {
                 if(instructions.shouldRenderBlock){
-                    renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
-                    renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
-                    if(lines.size>2) {
-                        val otherLines = lines.subList(1, lines.size - 1)
-                        renderBlock(otherLines, editor, newOffset!!)
+                    if(instructions.shouldRenderLastLine){
+                        val currentPosition = editor.caretModel.logicalPosition
+                        val r = Runnable {
+                            editor.document.insertString(startOffset + replaceSuffix.length, "\n")
+                            this.editor = editor
+                            editor.caretModel.moveToLogicalPosition(currentPosition)
+                        }
+                        WriteCommandAction.runWriteCommandAction(
+                            editor.project,
+                            "AddNextLineForPreview",
+                            "InlinePreviewCommands", r
+                        )
+
+                        val currOffset = editor.caretModel.offset
+                        val newLine = editor.document.getLineNumber(currOffset) + 1
+                        val newOffset = editor.document.getLineStartOffset(newLine)
+
+
+                        renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                        renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                        if(lines.size>2) {
+                            val otherLines = lines.subList(1, lines.size - 1)
+                            renderBlock(otherLines, editor, newOffset)
+                        }
+                        renderNoSubstring(editor, lastLine, newOffset)
                     }
-                    renderNoSubstring(editor, lastLine, newOffset!!)
+                    else{
+
+                        renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
+                        renderAfterSubstring(endIndex, replaceSuffix, firstLine, editor, startOffset)
+                        val otherLines = lines.subList(1, lines.size)
+                        renderBlock(otherLines, editor,startOffset, false)
+                    }
                 }
                 else{
                     renderBeforeSubstring(firstLine, endIndex, editor, startOffset)
@@ -200,6 +269,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         lines: List<String>,
         editor: Editor,
         offset: Int,
+        above:Boolean = true
     ) {
         val blockElementRenderer = BlockElementRenderer(editor, lines, false)
         val element = editor
@@ -207,7 +277,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             .addBlockElement(
                 offset,
                 true,
-                true,
+                above,
                 1,
                 blockElementRenderer
             )

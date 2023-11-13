@@ -21,7 +21,7 @@ class DocumentListener: BulkAwareDocumentListener {
         val editor = getActiveEditor(event.document) ?: return
 
         if (CompletionPreview.getInstance(editor) != null) {
-            println("Already has a preview")
+//            println("Already has a preview")
             return
         }
 

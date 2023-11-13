@@ -8,27 +8,29 @@ enum class FirstLineRendering {
     BeforeAndAfterSubstring,
 }
 
-data class RenderingInstructions(val firstLine: FirstLineRendering, val shouldRenderBlock: Boolean)
+data class RenderingInstructions(val firstLine: FirstLineRendering, val shouldRenderBlock: Boolean, val shouldRenderLastLine: Boolean)
 
 object inlineStringProcessor {
-    fun determineRendering(textLines: List<String>, replaceSubstring: String): RenderingInstructions {
-        if (textLines.isEmpty()) return RenderingInstructions(FirstLineRendering.None, false)
+    fun determineRendering(textLines: List<String>, replaceSubstring: String, extraSuffix: String): RenderingInstructions {
+        if (textLines.isEmpty()) return RenderingInstructions(FirstLineRendering.None, false, false)
 
         val shouldRenderBlock = textLines.size > 1
+        val shouldRenderLastLine = extraSuffix.trimEnd().isNotEmpty()
 
         if (textLines[0].trim().isNotEmpty()) {
             if (replaceSubstring.trim().isNotEmpty()) {
                 val endIndex = textLines[0].indexOf(replaceSubstring)
 
-                if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSubstring, shouldRenderBlock)
+                if (endIndex == 0) return RenderingInstructions(FirstLineRendering.AfterSubstring, shouldRenderBlock, shouldRenderLastLine)
                 else if (endIndex > 0) return RenderingInstructions(
                     FirstLineRendering.BeforeAndAfterSubstring,
-                    shouldRenderBlock
+                    shouldRenderBlock,
+                    shouldRenderLastLine
                 )
             }
-            return RenderingInstructions(FirstLineRendering.BeforeSubstring, shouldRenderBlock)
+            return RenderingInstructions(FirstLineRendering.BeforeSubstring, shouldRenderBlock, shouldRenderLastLine)
         }
 
-        return RenderingInstructions(FirstLineRendering.None, shouldRenderBlock)
+        return RenderingInstructions(FirstLineRendering.None, shouldRenderBlock, shouldRenderLastLine)
     }
 }

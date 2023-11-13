@@ -1,6 +1,8 @@
 package com.artemus.inlineCompletionApi.listeners
 
+import com.artemus.ShowTestPreview
 import com.artemus.inlineCompletionApi.CompletionPreview
+import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
@@ -43,11 +45,12 @@ class KeyPressHandler: TypedHandlerDelegate() {
             val r = Runnable {
                 GlobalState.clearedByKeyPress = false
                 try {
-                    CompletionPreview.createInstance(editor, completions)
+                    CompletionPreview.createInstance(editor, completions, CompletionType.INLINE_COMPLETION)
                 }
                 catch(e:InvalidDataException){
                     // TODO: Trigger a new completion here
                     // TODO: Need to work on offset correction in adjustCompletion function to avoid this.
+                    ShowTestPreview().createPreview(editor, "Full text typed trigger")
                 }
             }
             ApplicationManager.getApplication().invokeLater(r)

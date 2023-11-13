@@ -1,6 +1,7 @@
 package com.artemus
 
 import com.artemus.inlineCompletionApi.CompletionPreview
+import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -28,7 +29,8 @@ class ShowTestPreview: AnAction() {
                         editor.caretModel.offset,
                         editor.caretModel.visualLineEnd - 1
                     )
-                )
+                ),
+                CompletionType.INLINE_COMPLETION
             )
         }
     }
@@ -206,7 +208,8 @@ class ShowTestPreview: AnAction() {
                         editor.caretModel.offset,
                         editor.caretModel.offset),
 
-                )
+                ),
+                CompletionType.INLINE_COMPLETION
             )
         }
     }

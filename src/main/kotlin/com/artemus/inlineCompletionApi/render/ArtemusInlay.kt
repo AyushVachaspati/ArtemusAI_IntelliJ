@@ -1,5 +1,6 @@
 package com.artemus.inlineCompletionApi.render
 
+import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
@@ -11,7 +12,7 @@ interface ArtemusInlay : Disposable {
     val isEmpty: Boolean
 
     fun getBounds(): Rectangle?
-    fun render(editor: Editor, completion: InlineCompletionItem)
+    fun render(editor: Editor, completion: InlineCompletionItem, completionType: CompletionType)
 
     companion object {
         @JvmStatic

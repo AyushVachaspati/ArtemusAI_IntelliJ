@@ -1,6 +1,6 @@
 package com.artemus.inlineCompletionApi.lookAheadCompletion
 
-import com.artemus.inlineCompletionApi.listeners.InlineLookupListener
+import com.artemus.inlineCompletionApi.listeners.LookAheadListener
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupManager
 
@@ -10,8 +10,9 @@ class LookAheadCompletionContributor:CompletionContributor() {
         // if lookaheadcompletion is called, we register a lookup listener to handle the suggestions.
 
         val lookupEx = LookupManager.getActiveLookup(parameters.editor)
-        lookupEx?.removeLookupListener(InlineLookupListener)
-        lookupEx?.addLookupListener(InlineLookupListener)
+        LookAheadListener.editor = parameters.editor
+        lookupEx?.removeLookupListener(LookAheadListener)
+        lookupEx?.addLookupListener(LookAheadListener)
     }
 
 }
