@@ -1,5 +1,6 @@
 package com.artemus.inlineCompletionApi.listeners
 
+import com.artemus.ShowTestPreview
 import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.intellij.ide.DataManager
@@ -11,12 +12,19 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.BulkAwareDocumentListener
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.wm.IdeFocusManager
+import java.util.Random
 
 class DocumentListener: BulkAwareDocumentListener {
 
 
     override fun documentChangedNonBulk(event: DocumentEvent) {
         val editor = getActiveEditor(event.document) ?: return
+
+        if (CompletionPreview.getInstance(editor) != null) {
+            println("Already has a preview")
+            return
+        }
+
         val project = editor.project
         val undoManager = UndoManager.getInstance(project!!)
         if(undoManager.isUndoInProgress){
@@ -25,6 +33,14 @@ class DocumentListener: BulkAwareDocumentListener {
                 ApplicationManager.getApplication().invokeLater(r)
             }
         }
+
+        if(!GlobalState.clearedByKeyPress) {
+            val r = Runnable {
+                ShowTestPreview().createPreview(editor, "Document changed\nsdkjfh${Random().ints(1).average()}")
+            }
+            ApplicationManager.getApplication().invokeLater(r)
+        }
+
         return
     }
 

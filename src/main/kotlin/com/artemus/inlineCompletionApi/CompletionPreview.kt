@@ -50,8 +50,8 @@ class CompletionPreview private constructor(
         if (completions.isEmpty()) {
             clear(editor)
             throw InvalidDataException(
-                "No valid Completions Provided.\n" +
-                        "Make sure replaceSuffix (based on Replace range) is SubString of first line of provided completion. "
+                "No valid Completions Provided. " +
+                "Make sure replaceSuffix (based on Replace range) is SubString of first line of provided completion. "
             )
         }
         EditorUtil.disposeWithEditor(editor, this)
