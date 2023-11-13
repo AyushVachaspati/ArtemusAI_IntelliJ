@@ -1,6 +1,7 @@
 package com.artemus.inlineCompletionApi
 
 import com.artemus.inlineCompletionApi.actions.InlineCompletionAction
+import com.intellij.codeInsight.lookup.impl.actions.ChooseItemAction
 import com.intellij.openapi.actionSystem.ActionPromoter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -14,7 +15,8 @@ class InlineActionsPromoter: ActionPromoter {
             val preview = CompletionPreview.getInstance(editor)
             if (preview != null) {
                 return actions.stream()
-                    .filter { action: AnAction? -> action is InlineCompletionAction }
+                    .filter { action: AnAction? ->
+                        action is ChooseItemAction || action is InlineCompletionAction }
                     .collect(Collectors.toList())
             }
         }

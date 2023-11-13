@@ -33,15 +33,10 @@
                          id="RemovePreviewEnter" order="last"/>
     <editorActionHandler action="EditorBackSpace" implementationClass="com.artemus.inlineCompletionApi.listeners.BackSpaceHandler"
                          id="RemovePreviewBackSpace" order="last"/>
-    <editorActionHandler action="EditorTab" implementationClass="com.artemus.inlineCompletionApi.listeners.TabHandler"
-                         id="RemovePreviewTab" order="last"/>
 
-    <!-- Handlers for Triggering Completion Preview -->
+<!--    Handlers for triggering inline completions-->
     <typedHandler implementation="com.artemus.inlineCompletionApi.listeners.KeyPressHandler" />
-
-<!--    NOT USING DOCUMENT LISTENER SINCE IT INTERFERES WITH UNDO IN INLAY RENDER DISPOSE -->
     <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.listeners.DocumentListener"/>
-
     <completion.contributor language="any"
                             implementationClass="com.artemus.inlineCompletionApi.lookAheadCompletion.LookAheadCompletionContributor"
                             order="last"/>
@@ -62,7 +57,7 @@
 
     <action class="com.artemus.inlineCompletionApi.actions.AcceptInlineCompletion"
             id="AcceptInlineCompletion" text="Accept Inline Completion">
-      <keyboard-shortcut first-keystroke="TAB" keymap="$default" />
+      <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
     </action>
 
     <action class="com.artemus.ShowTestPreview"
