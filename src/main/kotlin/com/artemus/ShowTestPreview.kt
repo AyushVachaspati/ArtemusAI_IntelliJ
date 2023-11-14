@@ -15,7 +15,7 @@ import com.intellij.openapi.editor.Editor
 //editor.caretModel.offset),
 
 class ShowTestPreview: AnAction() {
-    public fun createPreview(editor: Editor, completion: String){
+    public fun createPreviewInline(editor: Editor, completion: String){
         println("Test Action Performed")
         if(editor!=null) {
             CompletionPreview.createInstance(
@@ -31,6 +31,29 @@ class ShowTestPreview: AnAction() {
                     )
                 ),
                 CompletionType.INLINE_COMPLETION
+            )
+        }
+    }
+    public fun createPreviewLookAhead(editor: Editor, completion: String){
+        println("Test Action Performed")
+        if(editor!=null) {
+            CompletionPreview.createInstance(
+                editor,
+                listOf(
+                    // These tests expect "This is" as the text on the current line. and cursor at the start of line
+                    // Also test with caret in the middle of line
+                    // also test with caret at the end of line
+                    InlineCompletionItem(
+                        completion,
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd - 1
+                    ),InlineCompletionItem(
+                        completion +"new",
+                        editor.caretModel.offset,
+                        editor.caretModel.visualLineEnd - 1
+                    )
+                ),
+                CompletionType.LOOK_AHEAD_COMPLETION
             )
         }
     }

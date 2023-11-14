@@ -17,9 +17,6 @@ object AcceptInlineCompletion :
     class AcceptInlineCompletionHandler : EditorWriteActionHandler() {
         override fun executeWriteAction(editor: Editor, caret: Caret?, dataContext: DataContext) {
             CompletionPreview.getInstance(editor)?.applyPreview(editor)
-
-            // TODO: Trigger new suggestion here
-            println("Preview applied.. need to trigger new suggestion")
         }
 
         override fun isEnabledForCaret(

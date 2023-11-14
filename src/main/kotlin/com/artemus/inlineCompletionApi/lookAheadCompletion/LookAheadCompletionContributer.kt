@@ -10,7 +10,6 @@ class LookAheadCompletionContributor:CompletionContributor() {
         // if lookaheadcompletion is called, we register a lookup listener to handle the suggestions.
 
         val lookupEx = LookupManager.getActiveLookup(parameters.editor)
-        LookAheadListener.editor = parameters.editor
         lookupEx?.removeLookupListener(LookAheadListener)
         lookupEx?.addLookupListener(LookAheadListener)
     }

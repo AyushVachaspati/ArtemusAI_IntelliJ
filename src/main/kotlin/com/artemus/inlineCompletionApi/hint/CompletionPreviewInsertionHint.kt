@@ -1,6 +1,5 @@
 package com.artemus.inlineCompletionApi.hint
 
-import com.artemus.inlineCompletionApi.hint.InlineKeybindingHintUtil
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor

@@ -13,7 +13,7 @@ class ShowPreviousInlineCompletion :
     DumbAware,
     InlineCompletionAction {
     companion object {
-        const val ACTION_ID = "ShowPreviousInlineCompletion"
+        const val ACTION_ID = "ShowPreviousInlineCompletionAction"
     }
 
     override fun getHandler(): CodeInsightActionHandler {

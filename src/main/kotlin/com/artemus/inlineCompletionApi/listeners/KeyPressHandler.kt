@@ -31,7 +31,7 @@ class KeyPressHandler: TypedHandlerDelegate() {
             if(completions.isEmpty()){
                 CompletionPreview.clear(editor)
                 val r = Runnable {
-                    ShowTestPreview().createPreview(editor, "On typing new completion")
+                    ShowTestPreview().createPreviewInline(editor, "On typing new completion")
                 }
                 ApplicationManager.getApplication().invokeLater(r)
                 return Result.CONTINUE
@@ -48,7 +48,7 @@ class KeyPressHandler: TypedHandlerDelegate() {
                 catch(e:InvalidDataException){
                     // TODO: Trigger a new completion here
                     //  Since none of the filtered completions were valid
-                    ShowTestPreview().createPreview(editor, "Full text typed trigger")
+                    ShowTestPreview().createPreviewInline(editor, "Full text typed trigger")
                 }
                 finally {
                     GlobalState.clearedByKeyPress = false
@@ -68,8 +68,6 @@ class KeyPressHandler: TypedHandlerDelegate() {
     private fun filterAndAdjustCompletions(completions: List<InlineCompletionItem>, typedChar: Char,
                                            currentCompletionItem: InlineCompletionItem, currentIndex: Int
     ): List<InlineCompletionItem> {
-        //TODO: Correct offset changes so typing to the end of completions and completions with new line triggers new completion
-        //TODO: i.e it does not trigger the InvalidDataException in CompltionPreview constructor.
         val result = ArrayList<InlineCompletionItem>()
         for ((i,it) in completions.withIndex()) {
             if(it.insertText.startsWith(typedChar)) {

@@ -2,44 +2,54 @@ package com.artemus.inlineCompletionApi.listeners
 
 import com.artemus.ShowTestPreview
 import com.artemus.inlineCompletionApi.CompletionPreview
+import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.intellij.codeInsight.lookup.LookupEvent
 import com.intellij.codeInsight.lookup.LookupListener
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.editor.Editor
 import java.util.Random
 
 object LookAheadListener : LookupListener {
-    var editor: Editor? = null
 
     override fun currentItemChanged(event: LookupEvent) {
-        // This is lookaheadsuggestion with item.
-        // if the item is null.. then cancel preview and return.
-        // else if current completions have current item as prefix then keep them. otherwise trigger new completion
-        // with completion type as lookaheadsuggestion
-        // make sure current completion shown remains shown, as long as it keeps matching (wrt ctrl + ] ,  ctrl + ])
+
+        val editor = event.lookup.editor
         println("Look Ahead Item Changed")
-//            ShowTestPreview().createPreview(event.lookup.editor, "This is completion from lookup item: $event.item")
+        CompletionPreview.clear(editor)
+        GlobalState.clearedByLookupItemChange = true
+        val r = Runnable {
+            GlobalState.clearedByLookupItemChange = false
+            if(event.item != null) {
+                val userPrefix = event.lookup.itemPattern(event.item!!)
+                // TODO: This adjustment needs to be done to account for delay in user typing and completion delay
+                ShowTestPreview().createPreviewLookAhead(
+                    event.lookup.editor,
+                    "${event.item?.lookupString?.substring(userPrefix.length)} something something"
+                )
+            }
+        }
+        ApplicationManager.getApplication().invokeLater(r)
         println(event.item)
     }
 
     override fun lookupCanceled(event: LookupEvent) {
-        if(event.isCanceledExplicitly)
+        val editor = event.lookup.editor
+        if (event.isCanceledExplicitly) {
+            CompletionPreview.clear(editor)
             return
-
-        CompletionPreview.clear(editor!!)
-        // TODO: Need to call new preview with completionType = Inline from here
+        }
         println("Look Ahead Item Cancelled")
         val r = Runnable {
-            ShowTestPreview().createPreview(editor!!, "Look ahead cancelled ${Random().ints(1).average()}")
+            ShowTestPreview().createPreviewInline(editor!!, "cancelled lookahead ${Random().ints(1).average()}")
         }
         ApplicationManager.getApplication().invokeLater(r)
     }
 
     override fun itemSelected(event: LookupEvent) {
-        // TODO: Need to call new preview with completionType = Inline from here
+
+        val editor=event.lookup.editor
         println("Look Ahead Item Selected")
         val r = Runnable {
-            ShowTestPreview().createPreview(editor!!, "Look ahead accepted ${Random().ints(1).average()}")
+            ShowTestPreview().createPreviewInline(editor!!, "accepted look ahead ${Random().ints(1).average()}")
         }
         ApplicationManager.getApplication().invokeLater(r)
     }
