@@ -29,6 +29,10 @@ intellij {
   plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
 }
 
+dependencies {
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.3")
+}
 
 tasks {
   wrapper {

@@ -1,6 +1,6 @@
 package com.artemus.inlineCompletionApi.listeners
 
-import com.artemus.ShowTestPreview
+import com.artemus.inlineCompletionApi.InlineCompletionsManager
 import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
@@ -56,8 +56,6 @@ class DocumentListener: BulkAwareDocumentListener {
                     } catch (e: InvalidDataException) {
                         // TODO: Trigger a new completion here
                         //  Since none of the filtered completions were valid
-                        printlnError("No Valid Completions were provided.. what should we do")
-//                            ShowTestPreview().createPreview(editor, "Full text typed trigger")
                     }
                 }
             }
@@ -79,7 +77,7 @@ class DocumentListener: BulkAwareDocumentListener {
         // Don't trigger inside suggestion popup
         if(!GlobalState.clearedByKeyPress && !GlobalState.clearedByLookupItemChange && lookupEx==null) {
             val r = Runnable {
-                ShowTestPreview().createPreviewInline(editor, "Document changed\nsdkjfh${Random().ints(1).average()}")
+                InlineCompletionsManager.createPreviewInline(editor, "Document changed\nsdkjfh${Random().ints(1).average()}")
             }
             ApplicationManager.getApplication().invokeLater(r)
             return

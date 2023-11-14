@@ -1,6 +1,6 @@
 package com.artemus.inlineCompletionApi.listeners
 
-import com.artemus.ShowTestPreview
+import com.artemus.inlineCompletionApi.InlineCompletionsManager
 import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
@@ -31,7 +31,7 @@ class KeyPressHandler: TypedHandlerDelegate() {
             if(completions.isEmpty()){
                 CompletionPreview.clear(editor)
                 val r = Runnable {
-                    ShowTestPreview().createPreviewInline(editor, "On typing new completion")
+                    InlineCompletionsManager.createPreviewInline(editor, "On typing new completion")
                 }
                 ApplicationManager.getApplication().invokeLater(r)
                 return Result.CONTINUE
@@ -48,7 +48,7 @@ class KeyPressHandler: TypedHandlerDelegate() {
                 catch(e:InvalidDataException){
                     // TODO: Trigger a new completion here
                     //  Since none of the filtered completions were valid
-                    ShowTestPreview().createPreviewInline(editor, "Full text typed trigger")
+                    InlineCompletionsManager.createPreviewInline(editor, "Full text typed trigger")
                 }
                 finally {
                     GlobalState.clearedByKeyPress = false

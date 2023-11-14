@@ -1,6 +1,6 @@
 package com.artemus.inlineCompletionApi.listeners
 
-import com.artemus.ShowTestPreview
+import com.artemus.inlineCompletionApi.InlineCompletionsManager
 import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.intellij.codeInsight.lookup.LookupEvent
@@ -20,8 +20,7 @@ object LookAheadListener : LookupListener {
             GlobalState.clearedByLookupItemChange = false
             if(event.item != null) {
                 val userPrefix = event.lookup.itemPattern(event.item!!)
-                // TODO: This adjustment needs to be done to account for delay in user typing and completion delay
-                ShowTestPreview().createPreviewLookAhead(
+                InlineCompletionsManager.createPreviewLookAhead(
                     event.lookup.editor,
                     "${event.item?.lookupString?.substring(userPrefix.length)} something something"
                 )
@@ -37,7 +36,7 @@ object LookAheadListener : LookupListener {
         if(event.isCanceledExplicitly){
             CompletionPreview.clear(editor)
             val r = Runnable {
-                ShowTestPreview().createPreviewInline(editor, "Excplicit cancelled lookahead ${Random().ints(1).average()}")
+                InlineCompletionsManager.createPreviewInline(editor, "Excplicit cancelled lookahead ${Random().ints(1).average()}")
             }
             ApplicationManager.getApplication().invokeLater(r)
         }
@@ -45,7 +44,7 @@ object LookAheadListener : LookupListener {
             if(CompletionPreview.getInstance(editor) == null){
                 CompletionPreview.clear(editor)
                 val r = Runnable {
-                    ShowTestPreview().createPreviewInline(editor, "Implicit cancelled lookahead ${Random().ints(1).average()}")
+                    InlineCompletionsManager.createPreviewInline(editor, "Implicit cancelled lookahead ${Random().ints(1).average()}")
                 }
                 ApplicationManager.getApplication().invokeLater(r)
             }
@@ -57,7 +56,7 @@ object LookAheadListener : LookupListener {
         CompletionPreview.clear(editor)
         println("Look Ahead Item Selected")
         val r = Runnable {
-            ShowTestPreview().createPreviewInline(editor!!, "accepted look ahead ${Random().ints(1).average()}")
+            InlineCompletionsManager.createPreviewInline(editor!!, "accepted look ahead ${Random().ints(1).average()}")
         }
         ApplicationManager.getApplication().invokeLater(r)
     }

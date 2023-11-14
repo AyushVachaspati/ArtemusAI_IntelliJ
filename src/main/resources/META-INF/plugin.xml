@@ -60,7 +60,7 @@
       <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
     </action>
 
-    <action class="com.artemus.ShowTestPreview"
+    <action class="com.artemus.inlineCompletionApi.InlineCompletionsManager"
             id="ShowTestPreview" text="Trigger Test Action">
       <keyboard-shortcut first-keystroke="ctrl QUOTE" keymap="$default"/>
     </action>
