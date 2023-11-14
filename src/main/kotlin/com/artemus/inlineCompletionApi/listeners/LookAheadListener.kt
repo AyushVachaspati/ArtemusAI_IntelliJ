@@ -33,12 +33,23 @@ object LookAheadListener : LookupListener {
 
     override fun lookupCanceled(event: LookupEvent) {
         val editor = event.lookup.editor
-        CompletionPreview.clear(editor)
         println("Look Ahead Item Cancelled")
-        val r = Runnable {
-            ShowTestPreview().createPreviewInline(editor!!, "cancelled lookahead ${Random().ints(1).average()}")
+        if(event.isCanceledExplicitly){
+            CompletionPreview.clear(editor)
+            val r = Runnable {
+                ShowTestPreview().createPreviewInline(editor, "Excplicit cancelled lookahead ${Random().ints(1).average()}")
+            }
+            ApplicationManager.getApplication().invokeLater(r)
         }
-        ApplicationManager.getApplication().invokeLater(r)
+        else(
+            if(CompletionPreview.getInstance(editor) == null){
+                CompletionPreview.clear(editor)
+                val r = Runnable {
+                    ShowTestPreview().createPreviewInline(editor, "Implicit cancelled lookahead ${Random().ints(1).average()}")
+                }
+                ApplicationManager.getApplication().invokeLater(r)
+            }
+        )
     }
 
     override fun itemSelected(event: LookupEvent) {
