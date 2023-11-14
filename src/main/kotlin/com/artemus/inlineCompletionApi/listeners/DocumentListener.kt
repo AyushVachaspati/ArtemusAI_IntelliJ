@@ -68,7 +68,9 @@ class DocumentListener: BulkAwareDocumentListener {
         if(undoManager.isUndoInProgress){
             if(GlobalState.isArtemusUndoInProgress) return
             // if the current undo is NOT  because of clearing Completion Preview, then we clear preview (this handles undo op)
-            val r = Runnable { CompletionPreview.clear(editor) }
+            val r = Runnable {
+                CompletionPreview.clear(editor)
+            }
             ApplicationManager.getApplication().invokeLater(r)
         }
 
