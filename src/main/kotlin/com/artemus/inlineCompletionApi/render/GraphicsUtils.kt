@@ -29,8 +29,7 @@ object GraphicsUtils {
     val defaultColor: Color
         get() {
             val currentScheme = EditorColorsManager.getInstance().globalScheme
-            val defaultTextColor = currentScheme.defaultForeground
-            return defaultTextColor
+            return currentScheme.defaultForeground
         }
 
     val color: Color
@@ -38,7 +37,7 @@ object GraphicsUtils {
             return niceContrastColor
         }
 
-    val niceContrastColor: Color
+    private val niceContrastColor: Color
         get() {
             val averageBrightness = (getBrightness(JBColor.background()) + getBrightness(JBColor.foreground())) / 2.0
             var currentResult = Color.lightGray

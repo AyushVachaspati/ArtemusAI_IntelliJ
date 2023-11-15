@@ -5,7 +5,7 @@ import com.artemus.inlineCompletionApi.general.Utils
 import com.artemus.inlineCompletionApi.hint.CompletionPreviewInsertionHint
 import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.artemus.inlineCompletionApi.render.GraphicsUtils.getTabSize
-import com.artemus.inlineCompletionApi.render.inlineStringProcessor.determineRendering
+import com.artemus.inlineCompletionApi.render.InlineStringProcessor.Companion.determineRendering
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
@@ -29,10 +29,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         Disposer.register(parent, this)
     }
 
-    // TODO: Should we remove offset
-    override val offset: Int?
-        get() = beforeSuffixInlay?.offset ?: afterSuffixInlay?.offset ?: blockInlay?.offset
-
     override fun getBounds(): Rectangle? {
         val result = beforeSuffixInlay?.bounds?.let { Rectangle(it) }
 
@@ -43,9 +39,6 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
 
         return result
     }
-
-    override val isEmpty: Boolean
-        get() = beforeSuffixInlay == null && afterSuffixInlay == null && blockInlay == null
 
     override fun dispose() {
         beforeSuffixInlay?.let {
@@ -73,7 +66,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             if(undoManager.isUndoAvailable(fileEditor)){
                 // should this be a global variable
                 GlobalState.isArtemusUndoInProgress = true
-                UndoManager.getInstance(project!!).undo(fileEditor)
+                UndoManager.getInstance(project).undo(fileEditor)
                 GlobalState.isArtemusUndoInProgress = false
             }
 //            editor!!.caretModel.moveToOffset(offset)
@@ -86,8 +79,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         var lines = Utils.asLines(completion.insertText)
         if (lines.isEmpty()) return
 
-        val tabSize = getTabSize(editor)
-        lines = lines.map { it.replace("\t"," ".repeat(if (tabSize != null) tabSize else 4 ))}
+        lines = lines.map { it.replace("\t"," ".repeat(getTabSize(editor) ?: 4))}
         val firstLine = lines[0]
         val lastLine = lines[lines.size-1]
 

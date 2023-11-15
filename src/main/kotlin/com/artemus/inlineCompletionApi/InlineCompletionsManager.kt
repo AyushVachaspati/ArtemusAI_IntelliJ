@@ -4,13 +4,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.*
 
 
 object InlineCompletionsManager: AnAction() {
-    var scope = CoroutineScope(Job() + Dispatchers.Main)
-    val completionProviders = ArrayList<InlineCompletionProvider>()
+    private var scope = CoroutineScope(Job() + Dispatchers.Main)
+    private val completionProviders = ArrayList<InlineCompletionProvider>()
 
     fun addCompletionProvider(provider: InlineCompletionProvider){
         completionProviders.add(provider)
@@ -29,10 +28,10 @@ object InlineCompletionsManager: AnAction() {
         scope.cancel()
         createNewCoroutine()
         // TODO: call a function that calls all the providers  in an async -> then get all the completions from them using await().
-        //  then it concats all the completions and creates a completion preview based on this.
+        //  then it concatenates all the completions and creates a completion preview based on this.
         //  Check for CANCEL before creating the preview.
         scope.launch {
-            val a = async{
+            async{
                 getInlineCompletion(editor, completion)
             }.await()
         }
@@ -44,7 +43,7 @@ object InlineCompletionsManager: AnAction() {
         // TODO: call a function that calls all the providers  in an async -> then get all the completions from them using await().
         //  Then adjust all the completions for lookahead userPrefix input.
         //  Then adjust for other letters typed by the user after the userPrefix. Use prefix-suffix match used in DocumentListener
-        //  then it concats all the completions and creates a completion preview based on this.
+        //  then it concatenates all the completions and creates a completion preview based on this.
         //  Check for CANCEL before creating the preview.
         scope.launch {
             async{
@@ -99,7 +98,7 @@ object InlineCompletionsManager: AnAction() {
 //                    editor.caretModel.visualLineEnd - 1
 //                ),
                 InlineCompletionItem(
-                    completion + " 1234\nsdf\nsdfsd\nasdfsd",
+                    "$completion 1234\nTesting\nTesting\nTesting",
                     editor.caretModel.offset,
                     editor.caretModel.visualLineEnd - 1
                 )

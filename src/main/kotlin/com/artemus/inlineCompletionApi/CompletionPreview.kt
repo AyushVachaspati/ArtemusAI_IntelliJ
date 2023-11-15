@@ -4,7 +4,6 @@ import com.artemus.inlineCompletionApi.general.Utils
 import com.artemus.inlineCompletionApi.listeners.CaretMoveListener
 import com.artemus.inlineCompletionApi.listeners.InlineFocusListener
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
-import com.intellij.internal.performance.currentLatencyRecordKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
@@ -51,7 +50,7 @@ class CompletionPreview private constructor(
                 endIndex!= -1
         }
 
-        // if none of the completions match.. throw and error and don't create the preview.
+        // if none of the completions match. throw and error and don't create the preview.
         if (completions.isEmpty()) {
             clear(editor)
             throw InvalidDataException(

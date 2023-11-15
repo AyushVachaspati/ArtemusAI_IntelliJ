@@ -18,11 +18,11 @@ class KeyPressHandler: TypedHandlerDelegate() {
     override fun beforeCharTyped(typedChar: Char, project: Project, editor: Editor, file: PsiFile, fileType: FileType): Result {
         println("Char typed: $typedChar")
         // TODO: Check for matching completions. (only if current preview exists) otherwise trigger new completion
-        var currentPreview = CompletionPreview.getInstance(editor)
+        val currentPreview = CompletionPreview.getInstance(editor)
         if(currentPreview!=null) {
             var completions = currentPreview.getCompletions()
-            var currentCompletionItem = currentPreview.currentCompletion
-            var currentIndex = currentPreview.getCurrentIndex()
+            val currentCompletionItem = currentPreview.currentCompletion
+            val currentIndex = currentPreview.getCurrentIndex()
 
 
             // filter and adjust the completions which match the typed character

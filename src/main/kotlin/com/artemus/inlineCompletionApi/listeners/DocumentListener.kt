@@ -17,7 +17,6 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.IdeFocusManager
-import com.jetbrains.rd.util.printlnError
 import java.util.Random
 
 class DocumentListener: BulkAwareDocumentListener {
@@ -37,8 +36,8 @@ class DocumentListener: BulkAwareDocumentListener {
 
             val r = Runnable {
                 var completions = currentPreview.getCompletions()
-                var currentCompletionItem = currentPreview.currentCompletion
-                var currentIndex = currentPreview.getCurrentIndex()
+                val currentCompletionItem = currentPreview.currentCompletion
+                val currentIndex = currentPreview.getCurrentIndex()
 
 
                 // filter and adjust the completions which match the typed character
@@ -77,7 +76,7 @@ class DocumentListener: BulkAwareDocumentListener {
         // Don't trigger inside suggestion popup
         if(!GlobalState.clearedByKeyPress && !GlobalState.clearedByLookupItemChange && lookupEx==null) {
             val r = Runnable {
-                InlineCompletionsManager.createPreviewInline(editor, "Document changed\nsdkjfh${Random().ints(1).average()}")
+                InlineCompletionsManager.createPreviewInline(editor, "Document changed\nTesting${Random().ints(1).average()}")
             }
             ApplicationManager.getApplication().invokeLater(r)
             return

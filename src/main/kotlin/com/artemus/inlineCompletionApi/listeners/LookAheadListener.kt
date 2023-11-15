@@ -36,7 +36,7 @@ object LookAheadListener : LookupListener {
         if(event.isCanceledExplicitly){
             CompletionPreview.clear(editor)
             val r = Runnable {
-                InlineCompletionsManager.createPreviewInline(editor, "Excplicit cancelled lookahead ${Random().ints(1).average()}")
+                InlineCompletionsManager.createPreviewInline(editor, "Explicit cancelled lookahead ${Random().ints(1).average()}")
             }
             ApplicationManager.getApplication().invokeLater(r)
         }
@@ -56,7 +56,7 @@ object LookAheadListener : LookupListener {
         CompletionPreview.clear(editor)
         println("Look Ahead Item Selected")
         val r = Runnable {
-            InlineCompletionsManager.createPreviewInline(editor!!, "accepted look ahead ${Random().ints(1).average()}")
+            InlineCompletionsManager.createPreviewInline(editor, "accepted look ahead ${Random().ints(1).average()}")
         }
         ApplicationManager.getApplication().invokeLater(r)
     }

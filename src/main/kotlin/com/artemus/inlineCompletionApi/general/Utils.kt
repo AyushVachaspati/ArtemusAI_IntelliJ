@@ -59,7 +59,7 @@ object Utils {
         return wrapWithHtmlTag(content, "html")
     }
 
-    fun wrapWithHtmlTag(content: String, tag: String): String {
+    private fun wrapWithHtmlTag(content: String, tag: String): String {
         return "<$tag>$content</$tag>"
     }
 
@@ -96,7 +96,7 @@ object Utils {
         return AppExecutorUtil.getAppExecutorService().submit(runnable)
     }
 
-    fun executeThread(runnable: Runnable, delay: Long, timeUnit: TimeUnit?): Future<*> {
+    private fun executeThread(runnable: Runnable, delay: Long, timeUnit: TimeUnit?): Future<*> {
         if (isUnitTestMode) {
             runnable.run()
             return CompletableFuture.completedFuture<Any?>(null)
@@ -104,16 +104,16 @@ object Utils {
         return AppExecutorUtil.getAppScheduledExecutorService().schedule(runnable, delay, timeUnit)
     }
 
-    val isUnitTestMode: Boolean
+    private val isUnitTestMode: Boolean
         get() = (ApplicationManager.getApplication() == null
                 || ApplicationManager.getApplication().isUnitTestMode)
 
-    fun trimEndSlashAndWhitespace(text: String): String {
+    private fun trimEndSlashAndWhitespace(text: String): String {
         return text.replace("/\\s*$", "")
     }
 
     fun setCustomRepository(url: String) {
-        if (!url.trim { it <= ' ' }.isEmpty()) {
+        if (url.trim { it <= ' ' }.isNotEmpty()) {
             val pluginHosts = UpdateSettings.getInstance().storedPluginHosts
             val newStore = String.format("%s/update/jetbrains/updatePlugins.xml", trimEndSlashAndWhitespace(url))
             pluginHosts.add(newStore)
