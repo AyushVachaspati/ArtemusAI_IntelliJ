@@ -93,12 +93,13 @@ object InlineCompletionsManager: AnAction() {
                 // These tests expect "This is" as the text on the current line. and cursor at the start of line
                 // Also test with caret in the middle of line
                 // also test with caret at the end of line
+//                InlineCompletionItem(
+//                    completion,
+//                    editor.caretModel.offset,
+//                    editor.caretModel.visualLineEnd - 1
+//                ),
                 InlineCompletionItem(
-                    completion,
-                    editor.caretModel.offset,
-                    editor.caretModel.visualLineEnd - 1
-                ), InlineCompletionItem(
-                    completion + "new",
+                    completion + " 1234\nsdf\nsdfsd\nasdfsd",
                     editor.caretModel.offset,
                     editor.caretModel.visualLineEnd - 1
                 )

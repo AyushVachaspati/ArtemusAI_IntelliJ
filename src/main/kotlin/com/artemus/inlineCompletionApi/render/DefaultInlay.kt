@@ -120,12 +120,15 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val extraSuffix = oldSuffixSameLine.substring(oldEndIndex+replaceSuffix.length)
 
         if(completionType == CompletionType.LOOK_AHEAD_COMPLETION && extraSuffix.trimEnd().isNotEmpty()){
-            // TODO: Lookahead suggestion cannot handle next line (adding next line closes the popup menu)
-            //  if there's a way to handle this, then we can make the code common again.
-            CompletionPreview.clear(editor)
-            printlnError("Look Ahead Completion Must replace until end of line. Or it should be called from line end.")
-            // TODO: Should we throw an exception here?
-            return
+            // we cannot render multiline with extra suffix for lookahead. so truncating completion to current line only
+            if(lines.size>1){
+                lines = lines.subList(0,1)
+                printlnError("Look Ahead Completion has been truncated to single line, since it multiline and doesn't replace the whole suffix (i.e extra suffix is left)")
+            }
+//            // TODO: Lookahead suggestion cannot handle next line (adding next line closes the popup menu)
+//            CompletionPreview.clear(editor)
+//            printlnError("Look Ahead Completion Must replace until end of line. Or should have a single line. Or it should be called from line end.")
+//            return
         }
 
         replaceSuffix = replaceSuffix.trimEnd()
