@@ -24,6 +24,7 @@ object InlineCompletionsManager: AnAction() {
     }
 
     fun createPreviewInline(editor: Editor, completion: String){
+        completionProviders.forEach { println(it) }
         // call a function which calls
         scope.cancel()
         createNewCoroutine()

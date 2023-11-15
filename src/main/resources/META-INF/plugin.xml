@@ -24,7 +24,7 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
-    <actionPromoter implementation="com.artemus.inlineCompletionApi.InlineActionsPromoter"/>
+    <actionPromoter implementation="com.artemus.inlineCompletionApi.general.InlineActionsPromoter"/>
 
     <!-- Handler for Explicitly Cancelling Completion Previews -->
     <editorActionHandler action="EditorEscape" implementationClass="com.artemus.inlineCompletionApi.listeners.EscapeHandler"
@@ -34,12 +34,15 @@
     <editorActionHandler action="EditorBackSpace" implementationClass="com.artemus.inlineCompletionApi.listeners.BackSpaceHandler"
                          id="RemovePreviewBackSpace" order="last"/>
 
-<!--    Handlers for triggering inline completions-->
+    <!-- Handlers for triggering inline completions-->
     <typedHandler implementation="com.artemus.inlineCompletionApi.listeners.KeyPressHandler" />
     <editorFactoryDocumentListener implementation="com.artemus.inlineCompletionApi.listeners.DocumentListener"/>
     <completion.contributor language="any"
                             implementationClass="com.artemus.inlineCompletionApi.lookAheadCompletion.LookAheadCompletionContributor"
                             order="last"/>
+
+    <!-- Perform Startup Activities including registering completion providers-->
+    <preloadingActivity implementation="com.artemus.Initializer"/>
 
   </extensions>
 

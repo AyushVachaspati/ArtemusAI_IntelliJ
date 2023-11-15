@@ -1,5 +1,6 @@
-package com.artemus.inlineCompletionApi
+package com.artemus.inlineCompletionApi.general
 
+import com.artemus.inlineCompletionApi.CompletionPreview
 import com.artemus.inlineCompletionApi.actions.InlineCompletionAction
 import com.intellij.codeInsight.lookup.impl.actions.ChooseItemAction
 import com.intellij.openapi.actionSystem.ActionPromoter
