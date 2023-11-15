@@ -21,7 +21,6 @@ import java.util.Random
 
 class DocumentListener: BulkAwareDocumentListener {
 
-
     override fun documentChangedNonBulk(event: DocumentEvent) {
         val editor = getActiveEditor(event.document) ?: return
         val project = editor.project
@@ -91,17 +90,13 @@ class DocumentListener: BulkAwareDocumentListener {
             val prefixText = editor.document.getText(TextRange(editor.caretModel.visualLineStart, editor.caretModel.offset))
             val insertText = it.insertText
 
-            for(i in 1..prefixText.length) {
-                if (prefixText.substring(prefixText.length - i) == insertText.substring(0, i)) {
-                    overlap = insertText.substring(0, i)
+            for(j in 1..prefixText.length) {
+                if (prefixText.substring(prefixText.length - j) == insertText.substring(0, j)) {
+                    overlap = insertText.substring(0, j)
                     break
                 }
             }
             if(overlap!=null) {
-                println("#########")
-                println(overlap)
-                println("#########")
-
                 if (it.insertText == currentCompletionItem.insertText && i == currentIndex)
                 // if the currently shown item matches the prefix. It should continue to be shown
                     result.add(0, InlineCompletionItem(insertText.substring(overlap.length), it.startOffset + overlap.length , it.endOffset + overlap.length ))
