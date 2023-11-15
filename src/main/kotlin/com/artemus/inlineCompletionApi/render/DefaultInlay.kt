@@ -40,6 +40,12 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         return result
     }
 
+    override val offset: Int?
+        get() = beforeSuffixInlay?.offset ?: afterSuffixInlay?.offset ?: blockInlay?.offset
+
+    override val isEmpty: Boolean
+        get() = beforeSuffixInlay == null && afterSuffixInlay == null && blockInlay == null
+
     override fun dispose() {
         beforeSuffixInlay?.let {
             Disposer.dispose(it)

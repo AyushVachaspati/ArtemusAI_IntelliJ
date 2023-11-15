@@ -7,6 +7,9 @@ import com.intellij.openapi.editor.Editor
 import java.awt.Rectangle
 
 interface ArtemusInlay : Disposable {
+    val offset: Int?
+    val isEmpty: Boolean
+
     fun getBounds(): Rectangle?
     fun render(editor: Editor, completion: InlineCompletionItem, completionType: CompletionType)
 
