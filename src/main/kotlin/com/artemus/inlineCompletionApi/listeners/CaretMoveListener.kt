@@ -4,7 +4,6 @@ import com.artemus.inlineCompletionApi.CompletionPreview
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.util.ObjectUtils
 
 class CaretMoveListener(private var completionPreview: CompletionPreview?) : CaretListener {
     init {
