@@ -3,12 +3,13 @@ package com.artemus.inlineCompletionApi
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.editor.Editor
 import kotlinx.coroutines.*
 
 
 object InlineCompletionsManager: AnAction() {
-    private var scope = CoroutineScope(Job() + Dispatchers.Main)
+    private var scope = CoroutineScope(Job() + Dispatchers.EDT)
     private val completionProviders = ArrayList<InlineCompletionProvider>()
 
     fun addCompletionProvider(provider: InlineCompletionProvider){
@@ -24,7 +25,7 @@ object InlineCompletionsManager: AnAction() {
     }
 
     fun createPreviewInline(editor: Editor, completion: String){
-        runBlocking {   completionProviders.forEach { it.getInlineCompletion(editor, 0) } }
+//        runBlocking {   completionProviders.forEach { it.getInlineCompletion(editor, 0) } }
         // call a function which calls
         scope.cancel()
         createNewCoroutine()

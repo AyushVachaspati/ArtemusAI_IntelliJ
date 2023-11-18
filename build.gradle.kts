@@ -18,7 +18,7 @@ repositories {
 }
 
 kotlin {
-  jvmToolchain(11)
+  jvmToolchain(17)
 }
 
 intellij {
@@ -30,8 +30,8 @@ intellij {
 }
 
 dependencies {
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.3")
+//  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+//  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.3")
 
   implementation("io.grpc:grpc-netty-shaded:1.59.0")
   implementation("io.grpc:grpc-protobuf:1.59.0")
