@@ -9,7 +9,7 @@ import com.intellij.util.ObjectUtils
 class CaretMoveListener(private var completionPreview: CompletionPreview?) : CaretListener {
     init {
         if(completionPreview!!.editor is EditorEx){
-            val e = completionPreview!!.editor as EditorEx
+            val e = completionPreview!!.editor
             e.caretModel.addCaretListener(this, completionPreview!!)
         }
     }

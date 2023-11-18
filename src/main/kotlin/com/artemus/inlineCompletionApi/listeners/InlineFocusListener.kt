@@ -9,7 +9,7 @@ import com.intellij.util.ObjectUtils
 class InlineFocusListener(private val completionPreview: CompletionPreview) : FocusChangeListener {
     init {
         if(completionPreview.editor is EditorEx){
-            val e = completionPreview.editor as EditorEx
+            val e = completionPreview.editor
             e.addFocusListener(this, completionPreview)
         }}
 
