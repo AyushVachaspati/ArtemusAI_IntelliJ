@@ -7,6 +7,7 @@ plugins {
   alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin
   alias(libs.plugins.changelog) // Gradle Changelog Plugin
   alias(libs.plugins.qodana) // Gradle Qodana Plugin
+  id("com.google.protobuf") version "0.9.4"
 }
 
 group = properties("pluginGroup").get()
@@ -16,7 +17,6 @@ repositories {
   mavenCentral()
 }
 
-// Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
 kotlin {
   jvmToolchain(11)
 }
@@ -32,6 +32,43 @@ intellij {
 dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.3")
+
+  implementation("io.grpc:grpc-netty-shaded:1.59.0")
+  implementation("io.grpc:grpc-protobuf:1.59.0")
+  implementation("io.grpc:grpc-stub:1.59.0")
+
+  implementation("com.google.protobuf:protobuf-java:3.25.1")
+  implementation("com.google.protobuf:protobuf-java-util:3.25.1")
+  implementation("com.google.protobuf:protobuf-kotlin:3.25.1")
+  implementation("io.grpc:protoc-gen-grpc-kotlin:1.4.0")
+
+
+}
+
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:3.25.1"
+  }
+
+  plugins {
+    create("grpc") {
+      artifact = "io.grpc:protoc-gen-grpc-java:1.59.0"
+    }
+    create("grpckt") {
+      artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.0:jdk8@jar"
+    }
+  }
+  generateProtoTasks {
+    all().forEach {
+      it.plugins {
+        create("grpc")
+        create("grpckt")
+      }
+      it.builtins {
+        create("kotlin")
+      }
+    }
+  }
 }
 
 tasks {
@@ -53,9 +90,6 @@ tasks {
 
   publishPlugin {
     token = environment("PUBLISH_TOKEN")
-    // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-    // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-    // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
     channels = properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
   }
 }
