@@ -9,7 +9,8 @@ import kotlinx.coroutines.*
 
 
 object InlineCompletionsManager: AnAction() {
-    private var scope = CoroutineScope(Job() + Dispatchers.EDT)
+    private val dispatcher = Dispatchers.EDT
+    private var scope = CoroutineScope(Job() + dispatcher)
     private val completionProviders = ArrayList<InlineCompletionProvider>()
 
     fun addCompletionProvider(provider: InlineCompletionProvider){
@@ -21,11 +22,11 @@ object InlineCompletionsManager: AnAction() {
     }
 
     private fun createNewCoroutine(){
-        scope = CoroutineScope(Job() + Dispatchers.Main)
+        scope = CoroutineScope(Job() + dispatcher)
     }
 
     fun createPreviewInline(editor: Editor, completion: String){
-//        runBlocking {   completionProviders.forEach { it.getInlineCompletion(editor, 0) } }
+        runBlocking {   completionProviders.forEach { it.getInlineCompletion(editor, 0) } }
         // call a function which calls
         scope.cancel()
         createNewCoroutine()

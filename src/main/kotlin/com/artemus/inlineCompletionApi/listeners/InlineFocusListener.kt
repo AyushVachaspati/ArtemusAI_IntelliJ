@@ -8,10 +8,10 @@ import com.intellij.util.ObjectUtils
 
 class InlineFocusListener(private val completionPreview: CompletionPreview) : FocusChangeListener {
     init {
-        ObjectUtils.consumeIfCast(
-            completionPreview.editor, EditorEx::class.java
-        ) { e: EditorEx -> e.addFocusListener(this, completionPreview) }
-    }
+        if(completionPreview.editor is EditorEx){
+            val e = completionPreview.editor as EditorEx
+            e.addFocusListener(this, completionPreview)
+        }}
 
     override fun focusGained(editor: Editor) {
         CompletionPreview.clear(editor)

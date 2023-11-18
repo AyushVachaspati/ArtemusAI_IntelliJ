@@ -42,7 +42,7 @@
                             order="last"/>
 
     <!-- Perform Startup Activities including registering completion providers-->
-    <applicationInitializedListener implementation="com.artemus.Initializer"/>
+    <postStartupActivity implementation="com.artemus.Initializer"/>
 
   </extensions>
 

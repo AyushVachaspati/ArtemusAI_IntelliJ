@@ -8,9 +8,10 @@ import com.intellij.util.ObjectUtils
 
 class CaretMoveListener(private var completionPreview: CompletionPreview?) : CaretListener {
     init {
-        ObjectUtils.consumeIfCast(
-            completionPreview!!.editor, EditorEx::class.java
-        ) { e: EditorEx -> e.caretModel.addCaretListener(this, completionPreview!!) }
+        if(completionPreview!!.editor is EditorEx){
+            val e = completionPreview!!.editor as EditorEx
+            e.caretModel.addCaretListener(this, completionPreview!!)
+        }
     }
 
     override fun caretPositionChanged(event: CaretEvent) {
