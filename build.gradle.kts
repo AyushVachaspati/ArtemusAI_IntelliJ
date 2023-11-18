@@ -29,33 +29,38 @@ intellij {
   plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
 }
 
+
+val grpcVersion = "1.59.0"
+val protobufVersion = "3.25.1"
+val kotlinGrpcVersion = "1.4.0"
+
 dependencies {
 //  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 //  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.3")
 
-  implementation("io.grpc:grpc-netty-shaded:1.59.0")
-  implementation("io.grpc:grpc-protobuf:1.59.0")
-  implementation("io.grpc:grpc-stub:1.59.0")
+  implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
+  implementation("io.grpc:grpc-protobuf:$grpcVersion")
+  implementation("io.grpc:grpc-stub:$grpcVersion")
 
-  implementation("com.google.protobuf:protobuf-java:3.25.1")
-  implementation("com.google.protobuf:protobuf-java-util:3.25.1")
-  implementation("com.google.protobuf:protobuf-kotlin:3.25.1")
-  implementation("io.grpc:protoc-gen-grpc-kotlin:1.4.0")
+  implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+  implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
+  implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
+  implementation("io.grpc:protoc-gen-grpc-kotlin:$kotlinGrpcVersion")
 
 
 }
 
 protobuf {
   protoc {
-    artifact = "com.google.protobuf:protoc:3.25.1"
+    artifact = "com.google.protobuf:protoc:$protobufVersion"
   }
 
   plugins {
     create("grpc") {
-      artifact = "io.grpc:protoc-gen-grpc-java:1.59.0"
+      artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
     }
     create("grpckt") {
-      artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.0:jdk8@jar"
+      artifact = "io.grpc:protoc-gen-grpc-kotlin:$kotlinGrpcVersion:jdk8@jar"
     }
   }
   generateProtoTasks {
