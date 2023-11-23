@@ -152,6 +152,8 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                             "InlinePreviewCommands", r
                         )
 
+
+
                         val currOffset = editor.caretModel.offset
                         val newLine = editor.document.getLineNumber(currOffset) + 1
                         val newOffset = editor.document.getLineStartOffset(newLine)

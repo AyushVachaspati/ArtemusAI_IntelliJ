@@ -6,10 +6,11 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.editor.Editor
 import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 
 
 object InlineCompletionsManager: AnAction() {
-    private val dispatcher = Dispatchers.EDT
+    private val dispatcher = Dispatchers.Swing
     private var scope = CoroutineScope(Job() + dispatcher)
     private val completionProviders = ArrayList<InlineCompletionProvider>()
 
