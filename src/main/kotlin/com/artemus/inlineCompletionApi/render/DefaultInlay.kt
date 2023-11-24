@@ -130,11 +130,14 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         }
 
         replaceSuffix = replaceSuffix.trimEnd()
-        val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
 
-
+        val endIndex = if(replaceSuffix.isEmpty())
+                            (if(firstLine.isEmpty()) 0 else firstLine.length-1)
+                        else
+                            firstLine.indexOf(replaceSuffix)
+        println("End Index: $endIndex")
         val instructions = determineRendering(lines, replaceSuffix, extraSuffix)
-
+        println(instructions)
         //TODO: Refactor this code to make it shorter and cleaner to read
         when (instructions.firstLine) {
             FirstLineRendering.BeforeSubstring -> {
@@ -260,11 +263,40 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
                 }
             }
 
-            FirstLineRendering.None -> {}
+            FirstLineRendering.EmptyFirstLine -> {
+                if(instructions.shouldRenderBlock){
+                    if(instructions.shouldRenderLastLine){
+                        val currentPosition = editor.caretModel.logicalPosition
+                        val r = Runnable {
+                            editor.document.insertString(startOffset + replaceSuffix.length, "\n")
+                            this.editor = editor
+                            editor.caretModel.moveToLogicalPosition(currentPosition)
+                        }
+                        WriteCommandAction.runWriteCommandAction(
+                            editor.project,
+                            "AddNextLineForPreview",
+                            "InlinePreviewCommands", r
+                        )
+
+                        val currOffset = editor.caretModel.offset
+                        val newLine = editor.document.getLineNumber(currOffset) + 1
+                        val newOffset = editor.document.getLineStartOffset(newLine)
+
+                        if(lines.size>2) {
+                            val otherLines = lines.subList(1, lines.size - 1)
+                            renderBlock(otherLines, editor, newOffset)
+                        }
+                    }
+                    else{
+                        val otherLines = lines.subList(1, lines.size)
+                        renderBlock(otherLines, editor,startOffset, false)
+                    }
+                }
+            }
         }
 
 
-        if (instructions.firstLine != FirstLineRendering.None) {
+        if (instructions.firstLine != FirstLineRendering.EmptyFirstLine) {
             insertionHint = CompletionPreviewInsertionHint(editor, this, "")
         }
 

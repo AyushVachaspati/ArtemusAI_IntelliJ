@@ -3,7 +3,6 @@ package com.artemus.inlineCompletionApi
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.editor.Editor
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -32,16 +31,14 @@ object InlineCompletionsManager: AnAction() {
     }
 
     fun createPreviewInline(editor: Editor, completion: String){
-        // call a function which calls
         cancelCompletions()
-        scope.launch { completionProviders.forEach { it.getInlineCompletion(editor, 0)} }
-        // TODO: call a function that calls all the providers  in an async -> then get all the completions from them using await().
-        //  then it concatenates all the completions and creates a completion preview based on this.
-        //  Check for CANCEL before creating the preview.
         scope.launch {
-            async{
-                getInlineCompletion(editor, completion)
-            }.await()
+            val jobs = completionProviders.map { async {it.getInlineCompletion(editor, editor.caretModel.offset)}}
+            val results = jobs.awaitAll()
+            val completions = results.flatMap{it.asIterable()}
+            if(isActive) {
+                CompletionPreview.createInstance(editor,completions,CompletionType.INLINE_COMPLETION)
+            }
         }
     }
 
@@ -60,35 +57,18 @@ object InlineCompletionsManager: AnAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        cancelCompletions()
-        scope.launch {
-            val editor = e.getData(PlatformDataKeys.EDITOR)
-            if (editor != null) {
-                async{
-                    getSampleCompletions(editor)
-                }.await()
-            }
-        }
+        val editor = e.getData(PlatformDataKeys.EDITOR)
+        createPreviewInline(editor!!, "")
+//        cancelCompletions()
+//        scope.launch {
+//            val editor = e.getData(PlatformDataKeys.EDITOR)
+//            if (editor != null) {
+//                async{
+//                    getSampleCompletions(editor)
+//                }.await()
+//            }
+//        }
     }
-
-    private suspend fun getInlineCompletion(editor: Editor, completion: String) {
-        delay(5000)
-        CompletionPreview.createInstance(
-            editor,
-            listOf(
-                // These tests expect "This is" as the text on the current line. and cursor at the start of line
-                // Also test with caret in the middle of line
-                // also test with caret at the end of line
-                InlineCompletionItem(
-                    completion,
-                    editor.caretModel.offset,
-                    editor.caretModel.visualLineEnd - 1
-                )
-            ),
-            CompletionType.INLINE_COMPLETION
-        )
-    }
-
 
     private suspend fun getLookaheadCompletion(editor: Editor, completion: String) {
         delay(5000)

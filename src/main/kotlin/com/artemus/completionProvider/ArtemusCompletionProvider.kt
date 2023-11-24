@@ -2,38 +2,61 @@ package com.artemus.completionProvider
 
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.InlineCompletionProvider
-import com.google.gson.JsonParser
-import com.google.protobuf.kotlin.get
-import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.jetbrains.rd.util.printlnError
-import inference.GRPCInferenceServiceGrpcKt
-import inference.GrpcService
-import inference.GrpcService.ModelInferRequest.InferInputTensor
-import io.grpc.ManagedChannelBuilder
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectIndexed
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.jetbrains.concurrency.await
-import org.jetbrains.concurrency.runAsync
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.net.http.HttpTimeoutException
-import java.time.Duration
+import com.intellij.openapi.util.TextRange
+import java.util.regex.Pattern
 
 class ArtemusCompletionProvider: InlineCompletionProvider {
+    private val END_OF_LINE_VALID_PATTERN = Pattern.compile("^\\s*[)}\\]\"'`]*\\s*[:{;,]?\\s*$")
 
     override suspend fun getInlineCompletion(editor: Editor, triggerOffset: Int):List<InlineCompletionItem> {
-        val result = PredictionUtils.getInlineCompletion("Complete this string").result
-        print(result)
+        val currentOffset = editor.caretModel.offset
+
+        if(currentOffset!=triggerOffset) return emptyList()
+        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
+
+        println("Inline Completion Triggered")
+        val document = editor.document
+        val prefix = document.getText(TextRange(0,currentOffset))
+        val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
+        val startToken = "<fim-prefix>"
+        val endToken = "<fim-suffix>"
+        val middleToken = "<fim-middle>"
+        val prompt:String
+        val fillInMiddle = postfix.trim().isNotEmpty()
+
+        if(fillInMiddle){
+            prompt = "${startToken}${prefix}${endToken}${postfix}${middleToken}"
+        }
+        else{
+            prompt = prefix
+        }
+
+//        let cacheItem:CachePrompt = {
+//                prefix: prompt,
+//                completionType: CompletionType.inlineSuggestion
+//        };
+//
+//        console.log(prompt)
+//        let inlineCompletion:string|undefined = globalCache.get(sha1(JSON.stringify(cacheItem)).toString());
+
+//        if(!inlineCompletion){
+//            let prediction = await debounceCompletions(prompt);
+//            inlineCompletion = prediction? prediction.result.slice(prompt.length) : undefined;
+//            inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
+//        }
+
+        val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
+        var inlineCompletion = prediction?.result
+//        inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
+
+        if(inlineCompletion!=null){
+            inlineCompletion = inlineCompletion.substring(prompt.length)
+            return listOf(InlineCompletionItem(inlineCompletion, currentOffset, currentOffset),
+                InlineCompletionItem(inlineCompletion+"Testing", currentOffset, currentOffset),)
+        }
+
         return emptyList()
     }
 
@@ -43,9 +66,19 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         lookAheadItem: String,
         userPrefix: String,
         triggerOffset: Int):List<InlineCompletionItem> {
-        val result = PredictionUtils.getInlineCompletion("Complete this string").result
+        val result = PredictionUtils.debouncedInlineCompletion("Complete this string")?.result
         print(result)
         return emptyList()
+    }
+
+
+
+    private fun isValidMidlinePosition(document: Document, offset: Int): Boolean {
+        val lineIndex: Int = document.getLineNumber(offset)
+        val lineRange = TextRange.create(document.getLineStartOffset(lineIndex), document.getLineEndOffset(lineIndex))
+        val line = document.getText(lineRange)
+        val lineSuffix = line.substring(offset - lineRange.startOffset)
+        return END_OF_LINE_VALID_PATTERN.matcher(lineSuffix).matches()
     }
 }
 

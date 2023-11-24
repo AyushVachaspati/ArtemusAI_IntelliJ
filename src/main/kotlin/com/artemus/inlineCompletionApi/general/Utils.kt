@@ -47,7 +47,8 @@ object Utils {
     }
 
     fun asLines(block: String): List<String> {
-        return Arrays.stream(block.split("\n".toRegex()).toTypedArray())
+        // \\R is line break pattern independent of OS
+        return Arrays.stream(block.split("\\R".toRegex()).toTypedArray())
             .collect(Collectors.toList())
     }
 

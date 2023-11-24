@@ -43,13 +43,15 @@ class CompletionPreview private constructor(
             catch (e:Exception){
                 error = true
             }
-            val endIndex = if(replaceSuffix.isEmpty()) firstLine.length-1 else firstLine.indexOf(replaceSuffix)
-            if(error)
+            val endIndex = if(replaceSuffix.isEmpty())
+                                (if(firstLine.isEmpty()) 0 else firstLine.length-1)
+                            else
+                                firstLine.indexOf(replaceSuffix)
+             if(error)
                 false
             else
                 endIndex!= -1
         }
-
         // if none of the completions match. throw and error and don't create the preview.
         if (completions.isEmpty()) {
             clear(editor)

@@ -7,15 +7,17 @@ import inference.GRPCInferenceServiceGrpcKt
 import inference.GrpcService
 import inference.GrpcService.ModelInferResponse
 import io.grpc.ManagedChannelBuilder
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 
 
-data class ModelPrediction(val result: String?)
+data class ModelPrediction(val result: String)
 
 object PredictionUtils {
+    val debounceMs = 300L
     val grpcUrl = "127.0.0.1:81"
+    val inlineModelName = "santacoder_huggingface"
+    val streamModelName ="santacoder_huggingface_stream"
 
     private fun decodeRawOutput(rawOutput: ModelInferResponse):String{
         return rawOutput.getRawOutputContents(0)
@@ -25,7 +27,17 @@ object PredictionUtils {
             .substring(4)
     }
 
-    suspend fun getInlineCompletion(prefix:String): ModelPrediction{
+    suspend fun debouncedInlineCompletion(prefix:String): ModelPrediction? {
+
+        // Acts as debounce, since CompletionManager can call cancel.
+        try {
+            delay(debounceMs)
+        }
+        catch(e: CancellationException){
+//            println("Cancelled by Debounce")
+            return null
+        }
+
         val managedChannel = ManagedChannelBuilder.forTarget(grpcUrl)
             .usePlaintext()
             .build()
@@ -33,7 +45,7 @@ object PredictionUtils {
         try {
             val inferenceStub = GRPCInferenceServiceGrpcKt.GRPCInferenceServiceCoroutineStub(managedChannel)
             val modelRequest = GrpcService.ModelInferRequest.newBuilder()
-                .setModelName("santacoder_huggingface")
+                .setModelName(inlineModelName)
                 .addInputs(
                     GrpcService.ModelInferRequest.InferInputTensor.newBuilder()
                         .setName("input")
@@ -59,6 +71,6 @@ object PredictionUtils {
         finally {
             managedChannel.shutdown()
         }
-        return ModelPrediction(null)
+        return null
     }
 }

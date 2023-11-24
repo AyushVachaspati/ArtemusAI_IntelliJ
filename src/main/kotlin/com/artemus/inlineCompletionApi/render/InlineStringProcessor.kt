@@ -2,7 +2,7 @@ package com.artemus.inlineCompletionApi.render
 
 
 enum class FirstLineRendering {
-    None,
+    EmptyFirstLine,
     BeforeSubstring,
     AfterSubstring,
     BeforeAndAfterSubstring,
@@ -15,7 +15,7 @@ class InlineStringProcessor {
         fun determineRendering(textLines: List<String>,replaceSubstring: String,extraSuffix: String
         ): RenderingInstructions {
             if (textLines.isEmpty()) return RenderingInstructions(
-                FirstLineRendering.None,
+                FirstLineRendering.EmptyFirstLine,
                 shouldRenderBlock = false,
                 shouldRenderLastLine = false
             )
@@ -45,7 +45,7 @@ class InlineStringProcessor {
                 )
             }
 
-            return RenderingInstructions(FirstLineRendering.None, shouldRenderBlock, shouldRenderLastLine)
+            return RenderingInstructions(FirstLineRendering.EmptyFirstLine, shouldRenderBlock, shouldRenderLastLine)
         }
     }
 }
