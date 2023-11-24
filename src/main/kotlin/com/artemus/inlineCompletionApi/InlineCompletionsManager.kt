@@ -26,11 +26,15 @@ object InlineCompletionsManager: AnAction() {
         scope = CoroutineScope(Job() + dispatcher)
     }
 
-    fun createPreviewInline(editor: Editor, completion: String){
-        runBlocking {   completionProviders.forEach { it.getInlineCompletion(editor, 0) } }
-        // call a function which calls
+    fun cancelCompletions(){
         scope.cancel()
         createNewCoroutine()
+    }
+
+    fun createPreviewInline(editor: Editor, completion: String){
+        // call a function which calls
+        cancelCompletions()
+        scope.launch { completionProviders.forEach { it.getInlineCompletion(editor, 0)} }
         // TODO: call a function that calls all the providers  in an async -> then get all the completions from them using await().
         //  then it concatenates all the completions and creates a completion preview based on this.
         //  Check for CANCEL before creating the preview.
@@ -42,8 +46,7 @@ object InlineCompletionsManager: AnAction() {
     }
 
     fun createPreviewLookAhead(editor: Editor, completion: String){
-        scope.cancel()
-        createNewCoroutine()
+        cancelCompletions()
         // TODO: call a function that calls all the providers  in an async -> then get all the completions from them using await().
         //  Then adjust all the completions for lookahead userPrefix input.
         //  Then adjust for other letters typed by the user after the userPrefix. Use prefix-suffix match used in DocumentListener
@@ -57,8 +60,7 @@ object InlineCompletionsManager: AnAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        scope.cancel()
-        createNewCoroutine()
+        cancelCompletions()
         scope.launch {
             val editor = e.getData(PlatformDataKeys.EDITOR)
             if (editor != null) {
@@ -70,7 +72,7 @@ object InlineCompletionsManager: AnAction() {
     }
 
     private suspend fun getInlineCompletion(editor: Editor, completion: String) {
-        delay(1000)
+        delay(5000)
         CompletionPreview.createInstance(
             editor,
             listOf(
@@ -89,7 +91,7 @@ object InlineCompletionsManager: AnAction() {
 
 
     private suspend fun getLookaheadCompletion(editor: Editor, completion: String) {
-        delay(1000)
+        delay(5000)
         CompletionPreview.createInstance(
             editor,
             listOf(
@@ -113,7 +115,7 @@ object InlineCompletionsManager: AnAction() {
 
 
     private suspend fun getSampleCompletions(editor: Editor) {
-        delay(1000)
+        delay(5000)
         CompletionPreview.createInstance(
             editor,
             listOf(

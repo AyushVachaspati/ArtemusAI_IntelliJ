@@ -3,11 +3,25 @@ package com.artemus.completionProvider
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.InlineCompletionProvider
 import com.google.gson.JsonParser
+import com.google.protobuf.kotlin.get
+import com.google.protobuf.kotlin.toByteString
+import com.google.protobuf.kotlin.toByteStringUtf8
 import com.intellij.openapi.editor.Editor
 import com.jetbrains.rd.util.printlnError
 import inference.GRPCInferenceServiceGrpcKt
 import inference.GrpcService
+import inference.GrpcService.ModelInferRequest.InferInputTensor
 import io.grpc.ManagedChannelBuilder
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.jetbrains.concurrency.await
+import org.jetbrains.concurrency.runAsync
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -17,73 +31,9 @@ import java.time.Duration
 
 class ArtemusCompletionProvider: InlineCompletionProvider {
 
-    private fun getCompletion(): String?{
-        val client = HttpClient.newHttpClient()
-        try {
-            val request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:80/v2/models/santacoder_huggingface/infer"))
-                .timeout(Duration.ofSeconds(10))
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .POST(
-                    HttpRequest.BodyPublishers.ofString("""
-                        {"id":"test123",
-                        "inputs":[{
-                            "name":"input",
-                            "shape":[1,1],
-                            "datatype": "BYTES",
-                            "data":[["Complete this string"]]
-                           }]
-                       }
-                    """.trimIndent()
-                    )
-                )
-                .build()
-            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-            if(response.statusCode() == 200) {
-                val jsonObj = JsonParser.parseString(response.body()).asJsonObject
-                val completion = jsonObj.get("outputs")
-                    .asJsonArray[0]
-                    .asJsonObject
-                    .get("data")
-                    .asJsonArray[0]
-                    .asString
-                return completion
-            }
-            else{
-                printlnError("Invalid Response Received from API")
-                return null
-            }
-        }
-        catch(e: HttpTimeoutException){
-            printlnError("Connection Timed out")
-            return null
-        }
-    }
-
     override suspend fun getInlineCompletion(editor: Editor, triggerOffset: Int):List<InlineCompletionItem> {
-
-        val channel = ManagedChannelBuilder.forTarget("127.0.0.1:81")
-            .usePlaintext()
-            .build()
-        println(channel)
-        val inferenceStub = GRPCInferenceServiceGrpcKt.GRPCInferenceServiceCoroutineStub(channel)
-        println(inferenceStub)
-        val modelRequest = GrpcService.ModelReadyRequest.newBuilder()
-            .setName("santacoder_huggingface")
-            .build()
-        println(modelRequest)
-        val modelLive = inferenceStub.modelReady(modelRequest)
-
-
-        println("#".repeat(100))
-        println(modelLive)
-        println("#".repeat(100))
-        channel.shutdown()
-        // try to use current class loader to load the class instead of Intellij.. use Class<?> to get the current class and
-        // then cast it to the right interface, then use it to make the channel
-        val completion = getCompletion()
-        println(completion)
+        val result = PredictionUtils.getInlineCompletion("Complete this string").result
+        print(result)
         return emptyList()
     }
 
@@ -93,27 +43,56 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         lookAheadItem: String,
         userPrefix: String,
         triggerOffset: Int):List<InlineCompletionItem> {
-
-        val completion  = getCompletion()
-        println(completion)
+        val result = PredictionUtils.getInlineCompletion("Complete this string").result
+        print(result)
         return emptyList()
     }
 }
 
 
-/** Code to make grpc client. Not working */
-//val channel = ManagedChannelBuilder.forTarget("127.0.0.1:8001")
-//    .usePlaintext()
-//    .build();
-//
-//val inferenceStub = GRPCInferenceServiceGrpcKt.GRPCInferenceServiceCoroutineStub(channel)
-//val modelLive = inferenceStub.modelReady(
-//    GrpcService.ModelReadyRequest.newBuilder()
-//        .setName("santacoder_huggingface")
+/** Code to make grpc stream client */
+//    val managedChannel = ManagedChannelBuilder.forTarget("127.0.0.1:81")
+//        .usePlaintext()
 //        .build()
-//)
-//println("#".repeat(100))
-//println(modelLive)
-//println("#".repeat(100))
-//channel.shutdown()
+//    try {
+//        val inferenceStub = GRPCInferenceServiceGrpcKt.GRPCInferenceServiceCoroutineStub(managedChannel)
+//        val modelRequest = flowOf(
+//            GrpcService.ModelInferRequest.newBuilder()
+//                .setModelName("santacoder_huggingface_stream")
+//                .addInputs(
+//                    InferInputTensor.newBuilder()
+//                        .setName("input")
+//                        .setDatatype("BYTES")
+//                        .addShape(1).addShape(1)
+//                        .setContents(
+//                            GrpcService.InferTensorContents.newBuilder()
+//                                .addBytesContents("Complete this string".toByteStringUtf8())
+//                        )
+//                ).build()
+//        )
+//        val modelOutput = inferenceStub.modelStreamInfer(modelRequest)
+//        modelOutput.collectIndexed { index, value ->
+//            print(
+//                value.inferResponse
+//                .getRawOutputContents(0)
+//                .asReadOnlyByteBuffer()
+//                .toByteString()
+//                .toStringUtf8()
+//                .substring(4)
+//            )
+//            if (value.inferResponse.parametersMap["triton_final_response"]!!.boolParam) {
+//                println()
+//                printlnError("Final Response Received")
+//            }
+//        }
+//    }
+//    catch(e: CancellationException){
+//        printlnError("Request Cancelled")
+//    }
+//    catch(e:Exception){
+//        printlnError(e.stackTraceToString())
+//    }
+//    finally {
+//        managedChannel.shutdown()
+//    }
 /**********************************************/
