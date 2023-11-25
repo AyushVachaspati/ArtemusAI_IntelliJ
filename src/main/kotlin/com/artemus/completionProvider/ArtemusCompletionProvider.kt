@@ -2,19 +2,22 @@ package com.artemus.completionProvider
 
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.InlineCompletionProvider
+import com.artemus.inlineCompletionApi.general.Utils
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.TextRange
+import com.jetbrains.rd.util.printlnError
 import java.util.regex.Pattern
 
 class ArtemusCompletionProvider: InlineCompletionProvider {
-    private val END_OF_LINE_VALID_PATTERN = Pattern.compile("^\\s*[)}\\]\"'`]*\\s*[:{;,]?\\s*$")
 
     override suspend fun getInlineCompletion(editor: Editor, triggerOffset: Int):List<InlineCompletionItem> {
         val currentOffset = editor.caretModel.offset
 
         if(currentOffset!=triggerOffset) return emptyList()
-        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
+
+        // isValidMidlinePostion is not needed for FIM task for the LLM
+//        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
 
         println("Inline Completion Triggered")
         val document = editor.document
@@ -25,6 +28,7 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val middleToken = "<fim-middle>"
         val prompt:String
         val fillInMiddle = postfix.trim().isNotEmpty()
+        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
 
         if(fillInMiddle){
             prompt = "${startToken}${prefix}${endToken}${postfix}${middleToken}"
@@ -47,14 +51,16 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
 //            inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
 //        }
 
+        // get all editor values before calling the API, the editor can change while we wait.
         val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
         var inlineCompletion = prediction?.result
 //        inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
 
         if(inlineCompletion!=null){
             inlineCompletion = inlineCompletion.substring(prompt.length)
-            return listOf(InlineCompletionItem(inlineCompletion, currentOffset, currentOffset),
-                InlineCompletionItem(inlineCompletion+"Testing", currentOffset, currentOffset),)
+            if(isFirstLineSubstring(Utils.asLines(inlineCompletion)[0], document.getText(TextRange(triggerOffset, lineEndOffset))))
+                return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, lineEndOffset))
+            return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
         }
 
         return emptyList()
@@ -63,22 +69,78 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
 
     override suspend fun getLookAheadCompletion(
         editor: Editor,
-        lookAheadItem: String,
         userPrefix: String,
+        lookAheadItem: String,
         triggerOffset: Int):List<InlineCompletionItem> {
-        val result = PredictionUtils.debouncedInlineCompletion("Complete this string")?.result
-        print(result)
+
+        val currentOffset = editor.caretModel.offset
+
+        if(currentOffset!=triggerOffset) return emptyList()
+
+        // isValidMidlinePostion is not needed for FIM task for the LLM
+//        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
+
+        println("Inline Completion Triggered")
+        val document = editor.document
+        var prefix = document.getText(TextRange(0,currentOffset))
+        val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
+        val startToken = "<fim-prefix>"
+        val endToken = "<fim-suffix>"
+        val middleToken = "<fim-middle>"
+        val prompt:String
+        val fillInMiddle = postfix.trim().isNotEmpty()
+        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
+
+        prefix = prefix.removeSuffix(userPrefix)
+        prefix = prefix + lookAheadItem //get prefix as if popup suggestion was accepted
+
+        if(fillInMiddle){
+            prompt = "${startToken}${prefix}${endToken}${postfix}${middleToken}"
+        }
+        else{
+            prompt = prefix;
+        }
+
+//        let cacheItem:CachePrompt = {
+//                prefix: prompt,
+//                completionType: CompletionType.lookAheadSuggestion
+//        };
+//
+//        let inlineCompletion:string|undefined = globalCache.get(sha1(JSON.stringify(prompt)));
+
+        // get all editor values before calling the API, the editor can change while we wait.
+        var inlineCompletion = PredictionUtils.debouncedInlineCompletion(prompt)?.result
+
+        if(inlineCompletion!=null){
+            inlineCompletion = lookAheadItem.removePrefix(userPrefix) + inlineCompletion.substring(prompt.length)
+
+//            inlineCompletion? globalCache.set(sha1(JSON.stringify(prompt)), inlineCompletion) : undefined;
+
+//            // Also cache inlineSuggestion, this will be shown when user accepts LookAheadSuggestion in order to maintain a seamless experience.
+//            let ifAcceptedLookAheadSuggestion = prediction? prediction.result.slice(prompt.length) : undefined;
+//            cacheItem.completionType = CompletionType.inlineSuggestion;
+//            ifAcceptedLookAheadSuggestion ? globalCache.set(sha1(JSON.stringify(prompt)),ifAcceptedLookAheadSuggestion) : undefined;
+
+            println(inlineCompletion)
+            if(isFirstLineSubstring(Utils.asLines(inlineCompletion)[0], document.getText(TextRange(triggerOffset, lineEndOffset))))
+                return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, lineEndOffset))
+            return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
+
+        }
         return emptyList()
     }
 
 
 
     private fun isValidMidlinePosition(document: Document, offset: Int): Boolean {
-        val lineIndex: Int = document.getLineNumber(offset)
-        val lineRange = TextRange.create(document.getLineStartOffset(lineIndex), document.getLineEndOffset(lineIndex))
-        val line = document.getText(lineRange)
-        val lineSuffix = line.substring(offset - lineRange.startOffset)
-        return END_OF_LINE_VALID_PATTERN.matcher(lineSuffix).matches()
+        val END_OF_LINE_VALID_PATTERN = Pattern.compile("^\\s*[)}\\]\"'`]*\\s*[:{;,]?\\s*$")
+        val lineIndex = document.getLineNumber(offset)
+        val suffix = document.getText(TextRange(offset, document.getLineEndOffset(lineIndex)))
+        return END_OF_LINE_VALID_PATTERN.matcher(suffix).matches()
+    }
+
+    private fun isFirstLineSubstring(firstLine: String, lineSuffix: String): Boolean{
+        return firstLine.indexOf(lineSuffix.trimEnd()) != -1
     }
 }
 

@@ -14,72 +14,90 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.BulkAwareDocumentListener
 import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.IdeFocusManager
+import com.jetbrains.rd.util.printlnError
 import java.util.Random
 
 class DocumentListener: BulkAwareDocumentListener {
-
     override fun documentChangedNonBulk(event: DocumentEvent) {
         val editor = getActiveEditor(event.document) ?: return
         val project = editor.project
-
         val currentPreview = CompletionPreview.getInstance(editor)
         val lookupEx = LookupManager.getActiveLookup(editor)
 
-        // INLINE Completion case handled here
         if (currentPreview != null) {
-            if(currentPreview.getCompletionType() != CompletionType.LOOK_AHEAD_COMPLETION) return
-            if( lookupEx == null ) return
+            if(currentPreview.getCompletionType() == CompletionType.INLINE_COMPLETION){
 
-            val r = Runnable {
-                var completions = currentPreview.getCompletions()
-                val currentCompletionItem = currentPreview.currentCompletion
-                val currentIndex = currentPreview.getCurrentIndex()
-
-
-                // filter and adjust the completions which match the typed character
-                completions = adjustLookAheadCompletions(editor, completions, currentCompletionItem, currentIndex)
-
-                if(completions.isNotEmpty()){
-                    // Create new preview with the Adjusted completions
-                    CompletionPreview.clear(editor)
-                    try {
-                        CompletionPreview.createInstance(
-                            editor,
-                            completions,
-                            CompletionType.LOOK_AHEAD_COMPLETION
-                        )
-                    } catch (e: InvalidDataException) {
-                        // TODO: Trigger a new completion here
-                        //  Since none of the filtered completions were valid
+                val undoManager = UndoManager.getInstance(project!!)
+                if (undoManager.isUndoInProgress || undoManager.isRedoInProgress) {
+                    println("Inside Undo")
+                    if (GlobalState.isArtemusUndoInProgress) return
+                    val r = Runnable {
+                        CompletionPreview.clear(editor)
                     }
+                    ApplicationManager.getApplication().invokeLater(r)
+                    return
                 }
-            }
-            ApplicationManager.getApplication().invokeLater(r)
-        }
 
-        val undoManager = UndoManager.getInstance(project!!)
-        if(undoManager.isUndoInProgress){
-            if(GlobalState.isArtemusUndoInProgress) return
-            // if the current undo is NOT  because of clearing Completion Preview, then we clear preview (this handles undo op)
-            val r = Runnable {
-                CompletionPreview.clear(editor)
+                if(!GlobalState.isKeyPressHandlerTriggered && !GlobalState.isCreatingPreview){
+                    val r = Runnable {
+                        CompletionPreview.clear(editor)
+                        InlineCompletionsManager.createPreviewInline(
+                            editor,
+                            "Document changed\nTesting${Random().ints(1).average()}"
+                        )
+                    }
+                    ApplicationManager.getApplication().invokeLater(r)
+                    return
+                }
+                return
             }
-            ApplicationManager.getApplication().invokeLater(r)
-        }
 
-        // if not cleared by user typing something different from suggestion. then we trigger a new suggestion here
-        // This prevents Document Listener from interfering with keyPress adjustment.
-        // Don't trigger inside suggestion popup
-        if(!GlobalState.clearedByKeyPress && !GlobalState.clearedByLookupItemChange && lookupEx==null) {
+            //LookAheadCompletion case
+            if( lookupEx == null ) return
+            adjustAndShowLookAheadCompletions(editor)
+            return
+        }
+        else {
+            // if not cleared by user typing something different from suggestion. then we trigger a new suggestion here
+            // This prevents Document Listener from interfering with keyPress adjustment.
+            // Don't trigger inside suggestion popup
+            if (GlobalState.clearedByKeyPress || GlobalState.clearedByLookupItemChange || lookupEx != null) return
+            CompletionPreview.clear(editor)
             val r = Runnable {
-                InlineCompletionsManager.createPreviewInline(editor, "Document changed\nTesting${Random().ints(1).average()}")
+                InlineCompletionsManager.createPreviewInline(
+                    editor,
+                    "Document changed\nTesting${Random().ints(1).average()}"
+                )
             }
             ApplicationManager.getApplication().invokeLater(r)
             return
         }
+    }
+
+    private fun adjustAndShowLookAheadCompletions(editor: Editor) {
+        val currentPreview = CompletionPreview.getInstance(editor)!!
+        val r = Runnable {
+            var completions = currentPreview.getCompletions()
+            val currentCompletionItem = currentPreview.currentCompletion
+            val currentIndex = currentPreview.getCurrentIndex()
+
+
+            // filter and adjust the completions which match the typed character
+            completions = adjustLookAheadCompletions(editor, completions, currentCompletionItem, currentIndex)
+
+            if (completions.isNotEmpty()) {
+                // Create new preview with the Adjusted completions
+                CompletionPreview.clear(editor)
+                CompletionPreview.createInstance(
+                    editor,
+                    completions,
+                    CompletionType.LOOK_AHEAD_COMPLETION
+                )
+            }
+        }
+        ApplicationManager.getApplication().invokeLater(r)
     }
 
     private fun adjustLookAheadCompletions(editor: Editor, completions: List<InlineCompletionItem>, currentCompletionItem: InlineCompletionItem, currentIndex: Int): List<InlineCompletionItem> {
@@ -105,7 +123,6 @@ class DocumentListener: BulkAwareDocumentListener {
             }
         }
         if(result.isEmpty()) return emptyList()
-        println(result)
         return result.toList()
     }
 

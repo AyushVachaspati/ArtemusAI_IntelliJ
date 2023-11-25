@@ -1,6 +1,7 @@
 package com.artemus.inlineCompletionApi
 
 import com.artemus.inlineCompletionApi.general.Utils
+import com.artemus.inlineCompletionApi.inlineCompletionGlobalState.GlobalState
 import com.artemus.inlineCompletionApi.listeners.CaretMoveListener
 import com.artemus.inlineCompletionApi.listeners.InlineFocusListener
 import com.artemus.inlineCompletionApi.render.ArtemusInlay
@@ -115,8 +116,6 @@ class CompletionPreview private constructor(
 
             val completion = completions[currentIndex]
             val startOffset = editor.caretModel.offset
-//            var endOffset = editor.caretModel.visualLineEnd
-//            endOffset = if (endOffset==startOffset) endOffset else endOffset-1
 
             val replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is just until eol for us
             val endIndex = completion.insertText.indexOf(replaceSuffix.trimEnd())
@@ -161,9 +160,12 @@ class CompletionPreview private constructor(
             editor: Editor, completions: List<InlineCompletionItem>, completionType: CompletionType
         ): InlineCompletionItem? {
             clear(editor)
+            GlobalState.isCreatingPreview = true
             val preview = CompletionPreview(editor, completions, completionType)
             editor.putUserData(INLINE_COMPLETION_PREVIEW, preview)
-            return preview.showPreview()
+            val completion = preview.showPreview()
+            GlobalState.isCreatingPreview = false
+            return completion
         }
 
         fun getInstance(editor: Editor?): CompletionPreview? {

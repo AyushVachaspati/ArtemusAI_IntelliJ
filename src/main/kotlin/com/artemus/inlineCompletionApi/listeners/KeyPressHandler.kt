@@ -15,8 +15,14 @@ import com.intellij.psi.PsiFile
 
 
 class KeyPressHandler: TypedHandlerDelegate() {
+    override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
+        // need to reset state set by beforeCharTyped
+        GlobalState.isKeyPressHandlerTriggered = false
+        return Result.CONTINUE
+    }
     override fun beforeCharTyped(typedChar: Char, project: Project, editor: Editor, file: PsiFile, fileType: FileType): Result {
         println("Char typed: $typedChar")
+        GlobalState.isKeyPressHandlerTriggered = true
         // TODO: Check for matching completions. (only if current preview exists) otherwise trigger new completion
         val currentPreview = CompletionPreview.getInstance(editor)
         if(currentPreview!=null) {

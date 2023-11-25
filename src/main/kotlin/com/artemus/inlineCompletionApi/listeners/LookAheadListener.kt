@@ -17,17 +17,17 @@ object LookAheadListener : LookupListener {
         CompletionPreview.clear(editor)
         GlobalState.clearedByLookupItemChange = true
         val r = Runnable {
-            GlobalState.clearedByLookupItemChange = false
-            if(event.item != null) {
-                val userPrefix = event.lookup.itemPattern(event.item!!)
+            val item = event.item
+            if(item != null) {
+                val userPrefix = event.lookup.itemPattern(item)
                 InlineCompletionsManager.createPreviewLookAhead(
-                    event.lookup.editor,
-                    "${event.item?.lookupString?.substring(userPrefix.length)} something something"
+                    event.lookup.editor,userPrefix, item.lookupString,
+                    "${item.lookupString.substring(userPrefix.length)} something something"
                 )
+                GlobalState.clearedByLookupItemChange = false
             }
         }
         ApplicationManager.getApplication().invokeLater(r)
-        println(event.item)
     }
 
     override fun lookupCanceled(event: LookupEvent) {
@@ -52,10 +52,10 @@ object LookAheadListener : LookupListener {
     }
 
     override fun itemSelected(event: LookupEvent) {
+        println("Accepted lookup")
         val editor=event.lookup.editor
-        CompletionPreview.clear(editor)
-        println("Look Ahead Item Selected")
         val r = Runnable {
+            CompletionPreview.clear(editor)
             InlineCompletionsManager.createPreviewInline(editor, "accepted look ahead ${Random().ints(1).average()}")
         }
         ApplicationManager.getApplication().invokeLater(r)

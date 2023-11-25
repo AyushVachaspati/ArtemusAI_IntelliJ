@@ -14,6 +14,6 @@ interface InlineCompletionProvider {
     // if completion is MULTILINE it should replace the entire suffix on the same line after the caret.
     // if there's suffix the completion doesn't replace then the lookahead should be at max 1 line, else it will be truncated to 1 line.
     // userPrefix gives the prefix of caret at triggerOffset (when this function was triggered)
-    suspend fun getLookAheadCompletion(editor: Editor, lookAheadItem: String, userPrefix: String, triggerOffset: Int):List<InlineCompletionItem>
+    suspend fun getLookAheadCompletion(editor: Editor, userPrefix: String, lookAheadItem: String, triggerOffset: Int):List<InlineCompletionItem>
 
 }

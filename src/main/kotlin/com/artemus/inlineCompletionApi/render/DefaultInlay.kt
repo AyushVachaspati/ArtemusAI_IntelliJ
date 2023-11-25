@@ -90,8 +90,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val lastLine = lines[lines.size-1]
 
         val startOffset = editor.caretModel.offset
-        var endOffset = editor.caretModel.visualLineEnd
-        endOffset = if (endOffset==startOffset) endOffset else endOffset-1
+        var endOffset = editor.document.getLineEndOffset(editor.document.getLineNumber(startOffset))
 
 
         if(startOffset != completion.startOffset){
