@@ -16,7 +16,6 @@ import com.intellij.openapi.editor.event.BulkAwareDocumentListener
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.IdeFocusManager
-import com.jetbrains.rd.util.printlnError
 import java.util.Random
 
 class DocumentListener: BulkAwareDocumentListener {
@@ -31,7 +30,6 @@ class DocumentListener: BulkAwareDocumentListener {
 
                 val undoManager = UndoManager.getInstance(project!!)
                 if (undoManager.isUndoInProgress || undoManager.isRedoInProgress) {
-                    println("Inside Undo")
                     if (GlobalState.isArtemusUndoInProgress) return
                     val r = Runnable {
                         CompletionPreview.clear(editor)

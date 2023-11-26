@@ -58,8 +58,6 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
 
         if(inlineCompletion!=null){
             inlineCompletion = inlineCompletion.substring(prompt.length)
-            if(isFirstLineSubstring(Utils.asLines(inlineCompletion)[0], document.getText(TextRange(triggerOffset, lineEndOffset))))
-                return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, lineEndOffset))
             return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
         }
 
@@ -121,9 +119,6 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
 //            cacheItem.completionType = CompletionType.inlineSuggestion;
 //            ifAcceptedLookAheadSuggestion ? globalCache.set(sha1(JSON.stringify(prompt)),ifAcceptedLookAheadSuggestion) : undefined;
 
-            println(inlineCompletion)
-            if(isFirstLineSubstring(Utils.asLines(inlineCompletion)[0], document.getText(TextRange(triggerOffset, lineEndOffset))))
-                return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, lineEndOffset))
             return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
 
         }
@@ -137,10 +132,6 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val lineIndex = document.getLineNumber(offset)
         val suffix = document.getText(TextRange(offset, document.getLineEndOffset(lineIndex)))
         return END_OF_LINE_VALID_PATTERN.matcher(suffix).matches()
-    }
-
-    private fun isFirstLineSubstring(firstLine: String, lineSuffix: String): Boolean{
-        return firstLine.indexOf(lineSuffix.trimEnd()) != -1
     }
 }
 
