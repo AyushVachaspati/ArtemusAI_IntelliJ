@@ -38,6 +38,9 @@ object PredictionUtils {
             return null
         }
 
+
+        //TODO: Set Status Bar Fetching here
+
         val managedChannel = ManagedChannelBuilder.forTarget(grpcUrl)
             .usePlaintext()
             .build()
@@ -70,6 +73,7 @@ object PredictionUtils {
         }
         finally {
             managedChannel.shutdown()
+            // TODO: Set status bar active here
         }
         return null
     }

@@ -31,6 +31,8 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val document = editor.document
         val prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
+
+        // SantaCoder <fim-prefix> | StarCoder <fim_prefix>
         val startToken = "<fim-prefix>"
         val endToken = "<fim-suffix>"
         val middleToken = "<fim-middle>"
@@ -89,6 +91,8 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val document = editor.document
         var prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
+
+        // SantaCoder <fim-prefix> | StarCoder <fim_prefix>
         val startToken = "<fim-prefix>"
         val endToken = "<fim-suffix>"
         val middleToken = "<fim-middle>"
