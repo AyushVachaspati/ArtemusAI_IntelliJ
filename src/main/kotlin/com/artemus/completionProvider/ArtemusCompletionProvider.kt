@@ -1,15 +1,24 @@
 package com.artemus.completionProvider
 
+import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.InlineCompletionProvider
-import com.artemus.inlineCompletionApi.general.Utils
+import com.artemus.lruCache.LRUCache
+import com.fasterxml.jackson.jr.ob.JSON
+import com.google.gson.Gson
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.TextRange
-import com.jetbrains.rd.util.printlnError
+import java.security.MessageDigest
 import java.util.regex.Pattern
 
+
+data class CachePrompt(val prefix: String, val completionType: CompletionType )
+
 class ArtemusCompletionProvider: InlineCompletionProvider {
+    companion object{
+        val globalCache = LRUCache(1000)
+    }
 
     override suspend fun getInlineCompletion(editor: Editor, triggerOffset: Int):List<InlineCompletionItem> {
         val currentOffset = editor.caretModel.offset
@@ -19,7 +28,6 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         // isValidMidlinePostion is not needed for FIM task for the LLM
 //        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
 
-        println("Inline Completion Triggered")
         val document = editor.document
         val prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
@@ -37,27 +45,27 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
             prompt = prefix
         }
 
-//        let cacheItem:CachePrompt = {
-//                prefix: prompt,
-//                completionType: CompletionType.inlineSuggestion
-//        };
-//
-//        console.log(prompt)
-//        let inlineCompletion:string|undefined = globalCache.get(sha1(JSON.stringify(cacheItem)).toString());
+        val cacheItem = CachePrompt(prefix = prompt, completionType = CompletionType.INLINE_COMPLETION)
 
-//        if(!inlineCompletion){
-//            let prediction = await debounceCompletions(prompt);
-//            inlineCompletion = prediction? prediction.result.slice(prompt.length) : undefined;
-//            inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
-//        }
+//        println(prompt)
 
-        // get all editor values before calling the API, the editor can change while we wait.
-        val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
-        var inlineCompletion = prediction?.result
-//        inlineCompletion? globalCache.set(sha1(JSON.stringify(cacheItem)), inlineCompletion) : undefined;
+        val key = MessageDigest.getInstance("SHA1")
+            .digest(Gson().toJson(cacheItem)
+                .toByteArray())
+            .decodeToString()
+
+        var inlineCompletion = globalCache.get(key)
+        if(inlineCompletion == null) {
+            val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
+            inlineCompletion = prediction?.result
+            if(inlineCompletion != null)
+            {
+                inlineCompletion = inlineCompletion.substring(prompt.length)
+                globalCache.set(key, inlineCompletion)
+            }
+        }
 
         if(inlineCompletion!=null){
-            inlineCompletion = inlineCompletion.substring(prompt.length)
             return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
         }
 
@@ -78,7 +86,6 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         // isValidMidlinePostion is not needed for FIM task for the LLM
 //        if(!isValidMidlinePosition(editor.document, currentOffset)) return emptyList()
 
-        println("Inline Completion Triggered")
         val document = editor.document
         var prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
@@ -88,6 +95,12 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val prompt:String
         val fillInMiddle = postfix.trim().isNotEmpty()
         val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
+
+        // TODO: This is bad place to fix this.. Make a proper fix in InlineCompletionManager to handle
+        //  when the lookahead item does start with what the user typed
+        if(!lookAheadItem.startsWith(userPrefix)){
+            return emptyList()
+        }
 
         prefix = prefix.removeSuffix(userPrefix)
         prefix = prefix + lookAheadItem //get prefix as if popup suggestion was accepted
@@ -99,29 +112,40 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
             prompt = prefix;
         }
 
-//        let cacheItem:CachePrompt = {
-//                prefix: prompt,
-//                completionType: CompletionType.lookAheadSuggestion
-//        };
-//
-//        let inlineCompletion:string|undefined = globalCache.get(sha1(JSON.stringify(prompt)));
+        val cacheItem = CachePrompt(prefix = prompt, completionType = CompletionType.LOOK_AHEAD_COMPLETION)
 
-        // get all editor values before calling the API, the editor can change while we wait.
-        var inlineCompletion = PredictionUtils.debouncedInlineCompletion(prompt)?.result
+//        println(prompt)
+
+        val key = MessageDigest.getInstance("SHA1")
+            .digest(Gson().toJson(cacheItem)
+                .toByteArray())
+            .decodeToString()
+
+        var inlineCompletion = globalCache.get(key)
+
+        if(inlineCompletion == null) {
+            val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
+            inlineCompletion = prediction?.result
+            if(inlineCompletion != null)
+            {
+                inlineCompletion = lookAheadItem.removePrefix(userPrefix) + inlineCompletion.substring(prompt.length)
+                globalCache.set(key, inlineCompletion)
+            }
+
+            // Also cache inlineSuggestion, this will be shown when user accepts LookAheadSuggestion in order to maintain a seamless experience.
+            val ifAcceptedLookAheadSuggestion = prediction?.result?.substring(prompt.length)
+            val cacheItem = CachePrompt(prefix = prompt, completionType = CompletionType.INLINE_COMPLETION)
+            val inlineKey = MessageDigest.getInstance("SHA1")
+                .digest(Gson().toJson(cacheItem)
+                .toByteArray())
+                .decodeToString()
+            if (ifAcceptedLookAheadSuggestion!=null) globalCache.set(inlineKey, ifAcceptedLookAheadSuggestion)
+        }
 
         if(inlineCompletion!=null){
-            inlineCompletion = lookAheadItem.removePrefix(userPrefix) + inlineCompletion.substring(prompt.length)
-
-//            inlineCompletion? globalCache.set(sha1(JSON.stringify(prompt)), inlineCompletion) : undefined;
-
-//            // Also cache inlineSuggestion, this will be shown when user accepts LookAheadSuggestion in order to maintain a seamless experience.
-//            let ifAcceptedLookAheadSuggestion = prediction? prediction.result.slice(prompt.length) : undefined;
-//            cacheItem.completionType = CompletionType.inlineSuggestion;
-//            ifAcceptedLookAheadSuggestion ? globalCache.set(sha1(JSON.stringify(prompt)),ifAcceptedLookAheadSuggestion) : undefined;
-
             return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
-
         }
+
         return emptyList()
     }
 

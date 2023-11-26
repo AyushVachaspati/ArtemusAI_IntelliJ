@@ -4,6 +4,7 @@ import java.security.InvalidParameterException
 
 data class LRUCacheNode(var key: String, var value: String, var prev: Int?, var next: Int? )
 
+// TODO: Need to make this thread safe since multiple calls to InlineCompletions might access simultaneously
 class LRUCache(private val size: Int) {
     private val map: HashMap<String, Int>
     private var linkedList: Array<LRUCacheNode?>
@@ -98,13 +99,13 @@ class LRUCache(private val size: Int) {
         val index = this.map[key]!!
         val currentNode = this.linkedList[index]!!
 
-        if(index === this.tail){
+        if(index == this.tail){
             currentNode.key = key
             currentNode.value = value
             return
         } //already MRU, i.e. the tail.
 
-        if(index === this.head){
+        if(index == this.head){
             //key at head
             this.head = currentNode.next
             val nextLRUNode = if(this.head!==null) this.linkedList[this.head!!] else null
@@ -151,7 +152,7 @@ class LRUCache(private val size: Int) {
         val currentMRUNode = this.linkedList[currentMRUIndex]!!
 
         //case when cache size is 1
-        if(currentLRUIndex===currentMRUIndex){
+        if(currentLRUIndex==currentMRUIndex){
             this.map.remove(currentLRUNode.key)
             this.map[key] = currentLRUIndex
             currentLRUNode.value = value
@@ -191,13 +192,13 @@ class LRUCache(private val size: Int) {
     /************************************************************************************************************************************************************************************************/
 
     private fun isEmpty(): Boolean{
-        return this.numElements === 0
+        return this.numElements == 0
     }
 
     /************************************************************************************************************************************************************************************************/
 
     private fun isFull(): Boolean{
-        return this.numElements === this.size
+        return this.numElements == this.size
     }
 
     /************************************************************************************************************************************************************************************************/
