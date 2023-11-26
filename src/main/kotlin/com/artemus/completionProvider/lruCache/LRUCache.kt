@@ -1,4 +1,4 @@
-package com.artemus.lruCache
+package com.artemus.completionProvider.lruCache
 
 import java.security.InvalidParameterException
 

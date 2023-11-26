@@ -1,4 +1,4 @@
-package com.artemus.completionProvider
+package com.artemus.completionProvider.predictionUtils
 
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
@@ -16,8 +16,8 @@ data class ModelPrediction(val result: String)
 object PredictionUtils {
     val debounceMs = 300L
     val grpcUrl = "127.0.0.1:81"
-    val inlineModelName = "santacoder_huggingface"
-    val streamModelName ="santacoder_huggingface_stream"
+    val inlineModelName = InlineModelConfig.getName()
+    val chatModelName = ChatModelConfig.getName()
 
     private fun decodeRawOutput(rawOutput: ModelInferResponse):String{
         return rawOutput.getRawOutputContents(0)

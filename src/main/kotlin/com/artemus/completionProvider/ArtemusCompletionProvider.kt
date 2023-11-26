@@ -3,8 +3,9 @@ package com.artemus.completionProvider
 import com.artemus.inlineCompletionApi.CompletionType
 import com.artemus.inlineCompletionApi.InlineCompletionItem
 import com.artemus.inlineCompletionApi.InlineCompletionProvider
-import com.artemus.lruCache.LRUCache
-import com.fasterxml.jackson.jr.ob.JSON
+import com.artemus.completionProvider.lruCache.LRUCache
+import com.artemus.completionProvider.predictionUtils.InlineModelConfig
+import com.artemus.completionProvider.predictionUtils.PredictionUtils
 import com.google.gson.Gson
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -32,13 +33,13 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         val prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
 
-        // SantaCoder <fim-prefix> | StarCoder <fim_prefix>
-        val startToken = "<fim-prefix>"
-        val endToken = "<fim-suffix>"
-        val middleToken = "<fim-middle>"
+        val startToken = InlineModelConfig.getPrefixToken()
+        val endToken = InlineModelConfig.getSuffixToken()
+        val middleToken = InlineModelConfig.getMiddleToken()
+
         val prompt:String
         val fillInMiddle = postfix.trim().isNotEmpty()
-        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
+//        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
 
         if(fillInMiddle){
             prompt = "${startToken}${prefix}${endToken}${postfix}${middleToken}"
@@ -92,13 +93,14 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
         var prefix = document.getText(TextRange(0,currentOffset))
         val postfix = document.getText(TextRange(currentOffset, document.getLineEndOffset(document.lineCount-1)))
 
-        // SantaCoder <fim-prefix> | StarCoder <fim_prefix>
-        val startToken = "<fim-prefix>"
-        val endToken = "<fim-suffix>"
-        val middleToken = "<fim-middle>"
+
+        val startToken = InlineModelConfig.getPrefixToken()
+        val endToken = InlineModelConfig.getSuffixToken()
+        val middleToken = InlineModelConfig.getMiddleToken()
+
         val prompt:String
         val fillInMiddle = postfix.trim().isNotEmpty()
-        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
+//        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(triggerOffset))  //Lookahead replace until end of line
 
         // TODO: This is bad place to fix this.. Make a proper fix in InlineCompletionManager to handle
         //  when the lookahead item does start with what the user typed
@@ -138,9 +140,9 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
 
             // Also cache inlineSuggestion, this will be shown when user accepts LookAheadSuggestion in order to maintain a seamless experience.
             val ifAcceptedLookAheadSuggestion = prediction?.result?.substring(prompt.length)
-            val cacheItem = CachePrompt(prefix = prompt, completionType = CompletionType.INLINE_COMPLETION)
+            val inlineCacheItem = CachePrompt(prefix = prompt, completionType = CompletionType.INLINE_COMPLETION)
             val inlineKey = MessageDigest.getInstance("SHA1")
-                .digest(Gson().toJson(cacheItem)
+                .digest(Gson().toJson(inlineCacheItem)
                 .toByteArray())
                 .decodeToString()
             if (ifAcceptedLookAheadSuggestion!=null) globalCache.set(inlineKey, ifAcceptedLookAheadSuggestion)
