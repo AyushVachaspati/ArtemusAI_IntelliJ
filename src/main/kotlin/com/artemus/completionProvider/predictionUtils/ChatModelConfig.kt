@@ -1,6 +1,6 @@
 package com.artemus.completionProvider.predictionUtils
 
-enum class ChatModelName(){
+enum class ChatModelName{
     SantaCoderChat,
     StarCoderChat,
 }

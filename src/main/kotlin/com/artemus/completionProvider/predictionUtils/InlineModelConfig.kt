@@ -1,12 +1,12 @@
 package com.artemus.completionProvider.predictionUtils
 
-enum class InlineModelName(){
+enum class InlineModelName{
     SantaCoder,
     StarCoder,
 }
 
 object InlineModelConfig {
-    private val currentModel = InlineModelName.StarCoder
+    private val currentModel = InlineModelName.SantaCoder
 
     fun getPrefixToken(): String{
         return when(currentModel){
