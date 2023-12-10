@@ -11,7 +11,7 @@ object ChatModelConfig {
     fun getName(): String{
         return when(currentModel){
             ChatModelName.SantaCoderChat -> "santacoder_huggingface_stream"
-            ChatModelName.StarCoderChat -> "starcoder_huggingface_stream"
+            ChatModelName.StarCoderChat -> "starcoder_chat"
         }
     }
 }

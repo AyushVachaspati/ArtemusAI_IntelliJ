@@ -38,6 +38,9 @@ object PredictionUtils {
             return null
         }
 
+        if(prefix.isEmpty()){
+            return null
+        }
 
         //TODO: Set Status Bar Fetching here
 
