@@ -60,7 +60,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
             blockInlay = null
         }
         editor?.let {
-            // TODO: Removes the \n we add for block rendering. We need good testing for this.
+            // TODO: Here we remove the \n we added for block rendering. We need good testing for this.
             //  test case when user cancel preview by doing undo
             //  test case when user closes the project/ file while preview is showing
             val project = editor!!.project
@@ -101,7 +101,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         }
 
         val oldSuffixSameLine = editor.document.getText(TextRange(startOffset, endOffset)) // getting text till EOL
-        var replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) // old suffix is what the user gives offset for
+        var replaceSuffix = editor.document.getText(TextRange(completion.startOffset, completion.endOffset)) //part of the suffix that is to be replaced
         val oldEndIndex = oldSuffixSameLine.indexOf(replaceSuffix)
 
         //Not allowed to replace more than up to current line-end right now
@@ -117,7 +117,7 @@ class DefaultInlay(parent: Disposable) : ArtemusInlay {
         val extraSuffix = oldSuffixSameLine.substring(oldEndIndex+replaceSuffix.length)
 
         if(completionType == CompletionType.LOOK_AHEAD_COMPLETION && extraSuffix.trimEnd().isNotEmpty()){
-            // we cannot render multiline with extra suffix for lookahead. so truncating completion to current line only
+            // IMPORTANT: we cannot render multiline with extra suffix for lookahead. so truncating completion to current line only
             if(lines.size>1){
                 lines = lines.subList(0,1)
                 printlnError("Look Ahead Completion has been truncated to single line, since it multiline and doesn't replace the whole suffix (i.e extra suffix is left)")

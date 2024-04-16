@@ -127,15 +127,15 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
                 .toByteArray())
             .decodeToString()
 
-        var inlineCompletion = globalCache.get(key)
+        var lookaheadCompletion = globalCache.get(key)
 
-        if(inlineCompletion == null) {
+        if(lookaheadCompletion == null) {
             val prediction = PredictionUtils.debouncedInlineCompletion(prompt)
-            inlineCompletion = prediction?.result
-            if(inlineCompletion != null)
+            lookaheadCompletion = prediction?.result
+            if(lookaheadCompletion != null)
             {
-                inlineCompletion = lookAheadItem.removePrefix(userPrefix) + inlineCompletion.substring(prompt.length)
-                globalCache.set(key, inlineCompletion)
+                lookaheadCompletion = lookAheadItem.removePrefix(userPrefix) + lookaheadCompletion.substring(prompt.length)
+                globalCache.set(key, lookaheadCompletion)
             }
 
             // Also cache inlineSuggestion, this will be shown when user accepts LookAheadSuggestion in order to maintain a seamless experience.
@@ -148,8 +148,8 @@ class ArtemusCompletionProvider: InlineCompletionProvider {
             if (ifAcceptedLookAheadSuggestion!=null) globalCache.set(inlineKey, ifAcceptedLookAheadSuggestion)
         }
 
-        if(inlineCompletion!=null){
-            return listOf(InlineCompletionItem(inlineCompletion, triggerOffset, triggerOffset))
+        if(lookaheadCompletion!=null){
+            return listOf(InlineCompletionItem(lookaheadCompletion, triggerOffset, triggerOffset))
         }
 
         return emptyList()
